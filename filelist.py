@@ -1,12 +1,13 @@
-'''
-Created on 2012-7-16
-
-@author: Asvel
-'''
-testdir = "D:\\"
+import os
+import sys
+import time
+"""
+testdir = "\\\\?\\D:\\"
 testdirlong = r"\\?\D:\temp\longpath\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890"
 testfile = r"D:\temp\humansize.py"
 testfilelong = r"\\?\D:\temp\longpath\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\file.txt"
+"""
+os.stat_float_times(False)
 
 class File:
     def __init__(self, name = "", size = 0, time = 0):
@@ -24,8 +25,6 @@ class Directory:
         self.item.append(newitem)
 
 def read_dir(path):
-    import os
-    
     result = Directory(os.path.basename(path))
     try:
         item_name = sorted(os.listdir(path))
@@ -34,16 +33,24 @@ def read_dir(path):
             if os.path.isdir(newpath):
                 result.add_item(read_dir(newpath))
             else:
-                #info = os.stat(newpath)
-                #result.add_item(File(x, info.st_size, info.st_mtime))
-                result.add_item(File(x))
+                info = os.stat(newpath)
+                result.add_item(File(x, info.st_size, info.st_mtime))
     except:
         pass
     return result
-    pass
 
-def read_xml(path):
-    pass
+def json_output(obj, file):
+    import json
+    fp = open(file, "w", encoding="utf-8")
+    json.dump(
+        obj = obj,
+        fp = fp,
+        ensure_ascii = False,
+        check_circular = False,
+        sort_keys = True,
+        indent = "\t"
+    )
+    fp.close()
 
 def write_xml(dirobj, xmlfile):
     import xmlwitch
@@ -69,33 +76,55 @@ def write_xml(dirobj, xmlfile):
     f.write(xml.get_document())
     f.close()
 
-from timeit import Timer
+def write_json(dirobj, jsonfile):
+    def json_serialize(dirobj):
+        newitem = {}
+        newitem["name"] = dirobj.name
+        if len(dirobj.item) > 0:
+            newlist = []
+            newitem["sub"] = newlist
+            for x in dirobj.item:
+                if isinstance(x, Directory):
+                    newlist.append(json_serialize(x))
+                else:
+                    newfile = {"name": x.name, "size": x.size, "time": x.time}
+                    newlist.append(newfile)
+        return newitem
+    json_output(json_serialize(dirobj), jsonfile)
 
-import os
+def write_json_compact(dirobj, jsonfile):
+    def json_serialize_compact(dirobj):
+        newdict = {}
+        for x in dirobj.item:
+            if isinstance(x, Directory):
+                newitem = json_serialize_compact(x)
+            else:
+                newitem = {"size": x.size, "time": x.time}
+            newdict[x.name] = newitem
+        return newdict
+    json_output(json_serialize_compact(dirobj), jsonfile)
 
-import ctypes
-import ctypes.wintypes
-cCreateFile = ctypes.windll.kernel32.CreateFileW
-cGetFileSizeEx = ctypes.windll.kernel32.GetFileSizeEx
-cCloseHandle = ctypes.windll.kernel32.CloseHandle
-cGetFileAttributes = ctypes.windll.kernel32.GetFileAttributesW
-def getsize(path):
-    handle = cCreateFile(path, 0x120089, 7, 0, 3, 0, 0)
-    size = ctypes.wintypes.LARGE_INTEGER(0)
-    cGetFileSizeEx(handle, ctypes.byref(size))
-    cCloseHandle(handle)
-    return size.value
-def getattr(path):
-    return cGetFileAttributes(path)
+#from timeit import Timer
 
+#print(Timer("test()", "from __main__ import test").timeit(1))
 
-def test():
-    x = read_dir(testdir)
-    #write_xml(x, "1.xml")
-    #os.stat(testfilelong)
-    #getsize(testfilelong)
-    #getattr(testfilelong)
-    #os.path.isdir(testfilelong)
-    
+if __name__ == "__main__":
+    if (len(sys.argv) == 2):
+        if os.path.exists(sys.argv[1]):
+            path = sys.argv[1]
+            output_name = time.strftime("%Y%m%d_%H%M%S_")
+            output_name += path.replace(":", "").replace("\\", "_").strip("_")
+            path = "\\\\?\\" + path
+            #print(path, output_name)
+            if (os.path.isdir(path)):
+                x = read_dir(path)
+                #write_xml(x, output_name + ".xml")
+                write_json(x, output_name + ".json")
+                #write_json_compact(x, output_name + ".compact.json")
+                #"""
+        else:
+            print(sys.argv[1], "do not exist")
+    else:
+        pass
+    pass
 
-print(Timer("test()", "from __main__ import test").timeit(1))
