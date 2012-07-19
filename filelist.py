@@ -5,13 +5,24 @@ import time
 os.stat_float_times(False)
 
 def read_dir(path):
+    """抓取目录列表为一个字典
+    
+    path 要抓取的目录
+    
+    返回值的结构：
+    返回值由嵌套的字典和列表构成
+    每个字典表示一个项目（文件或目录），每个列表包含一组字典
+    每个字典有一个"name"键，值为该项目的名字
+    如果该项目是一个目录，那么有一个"sub"键，值为该目录的子项目的列表
+    如果该项目是一个文件，那么有"size"和"time"键，值分别为该文件的大小和修改时间
+    """
     result = {"name": os.path.basename(path)}
     
     #读取子项目列表
     try:
         subitem_name = sorted(os.listdir(path))
     except:
-        print("列出", path, "的子目录时发生异常")
+        print("列出", path, "的子项目时发生异常")
         subitem_name = []
     
     #扩展子项目
@@ -33,6 +44,11 @@ def read_dir(path):
     return result
 
 def write_json(obj, file):
+    """输出可序列化的对象 obj 为 JSON 文件 file
+    
+    obj 要输出的对象
+    file 输出到的文件
+    """
     import json
     fp = open(file, "w", encoding="utf-8")
     json.dump(
