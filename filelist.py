@@ -109,11 +109,7 @@ def write_json_compact(dirobj, jsonfile):
         return newdict
     json_output(json_serialize_compact(dirobj), jsonfile)
 
-#from timeit import Timer
-
-#print(Timer("test()", "from __main__ import test").timeit(1))
-
-if __name__ == "__main__":
+def main():
     if (len(sys.argv) == 2):
         if os.path.exists(sys.argv[1]):
             path = sys.argv[1]
@@ -131,5 +127,8 @@ if __name__ == "__main__":
             print(sys.argv[1], "do not exist")
     else:
         pass
-    pass
 
+if __name__ == "__main__":
+    #main()
+    from timeit import Timer
+    print(Timer("main()", "from __main__ import main").timeit(10))
