@@ -22,7 +22,7 @@ def read_dir(path):
     try:
         subitem_name = sorted(os.listdir(path))
     except:
-        print("列出", path, "的子项目时发生异常")
+        print("列出目录", path, "的子项目时发生异常")
         subitem_name = []
     
     #扩展子项目
@@ -32,7 +32,7 @@ def read_dir(path):
         if not os.path.isdir(newpath):
             newitem = {"name": x}
             try:
-                info = os.lstat(newpath)
+                info = os.stat(newpath)
                 newitem["size"] = info.st_size
                 newitem["time"] = info.st_mtime
             except:
