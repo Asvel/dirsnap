@@ -3,42 +3,99 @@ Created on 2012-7-16
 
 @author: Asvel
 '''
-testdir = r"D:\temp"
+testdir = "D:\\"
+testdirlong = r"\\?\D:\temp\longpath\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890"
 testfile = r"D:\temp\humansize.py"
+testfilelong = r"\\?\D:\temp\longpath\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\1234567890123456789012345678901234567890\file.txt"
+
+class File:
+    def __init__(self, name = "", size = 0, time = 0):
+        self.name = name
+        self.size = size
+        self.time = time
+
+class Directory:
+    def __init__(self, name = "", item = None):
+        self.name = name
+        self.item = item
+        if self.item is None:
+            self.item = []
+    def add_item(self, newitem):
+        self.item.append(newitem)
+
+def read_dir(path):
+    import os
+    
+    result = Directory(os.path.basename(path))
+    try:
+        item_name = sorted(os.listdir(path))
+        for x in item_name:
+            newpath = os.path.join(path, x)
+            if os.path.isdir(newpath):
+                result.add_item(read_dir(newpath))
+            else:
+                #info = os.stat(newpath)
+                #result.add_item(File(x, info.st_size, info.st_mtime))
+                result.add_item(File(x))
+    except:
+        pass
+    return result
+    pass
+
+def read_xml(path):
+    pass
+
+def write_xml(dirobj, xmlfile):
+    import xmlwitch
+    xml = xmlwitch.Builder(version='1.0', encoding='utf-8', indent='\t')
+    
+    def write_xml_dir(dirobj):
+        with xml.directory():
+            xml.name(dirobj.name)
+            if len(dirobj.item) > 0:
+                with xml.item:
+                    for x in dirobj.item:
+                        if isinstance(x, Directory):
+                            write_xml_dir(x)
+                        else:
+                            with xml.file:
+                                xml.name(x.name)
+                                xml.size(str(x.size))
+                                xml.time(str(x.time))
+                    
+    write_xml_dir(dirobj)
+    
+    f = open(xmlfile, "wb")
+    f.write(xml.get_document())
+    f.close()
+
+from timeit import Timer
 
 import os
 
-class item:
-    def __init__(self, path = ""):
-        (self.path, self.name) = ("", "")
-        self.setpath(path)
-    def setpath(self, path):
-        (self.path, self.name) = os.path.split(path)
-        
-class file(item):
-    def __init__(self, path = ""):
-        item.__init__(self, path)
-        self.size = 0
-        self.time = 0
-        self.setpath(path)
-    def setpath(self, path):
-        item.setpath(self, path)
-        if (path != ""):
-            info = os.stat(path)
-            self.size = info.st_size
-            self.time = info.st_mtime
+import ctypes
+import ctypes.wintypes
+cCreateFile = ctypes.windll.kernel32.CreateFileW
+cGetFileSizeEx = ctypes.windll.kernel32.GetFileSizeEx
+cCloseHandle = ctypes.windll.kernel32.CloseHandle
+cGetFileAttributes = ctypes.windll.kernel32.GetFileAttributesW
+def getsize(path):
+    handle = cCreateFile(path, 0x120089, 7, 0, 3, 0, 0)
+    size = ctypes.wintypes.LARGE_INTEGER(0)
+    cGetFileSizeEx(handle, ctypes.byref(size))
+    cCloseHandle(handle)
+    return size.value
+def getattr(path):
+    return cGetFileAttributes(path)
 
-class directory(item):
-    def __init__(self, path = ""):
-        item.__init__(self, path)
-        self.item = []
-        if (path != ""):
-            for t in os.listdir(path):
-                newpath = os.path.join(path, t)
-                newitem = (os.path.isdir(newpath) and directory or file)(newpath)
-                self.item.append(newitem)
-    def setpath(self, path):
-        item.setpath(self, path)
 
-x = directory(testdir)
-input()
+def test():
+    x = read_dir(testdir)
+    #write_xml(x, "1.xml")
+    #os.stat(testfilelong)
+    #getsize(testfilelong)
+    #getattr(testfilelong)
+    #os.path.isdir(testfilelong)
+    
+
+print(Timer("test()", "from __main__ import test").timeit(1))
