@@ -94,8 +94,19 @@ def read_json(file, obj):
     onj = json.load(fp)
     fp.close()
 
-def write_list(obj, file):
-    pass
+def write_tree(obj, file, indent = "\t"):
+    
+    def write_tree_dir(obj, fp, depth):
+        fp.write(indent * depth + obj["name"] + "\n")
+        for item in obj["sub"]:
+            if "sub" not in item:
+                fp.write(indent * (depth + 1) + item["name"] + "\n")
+            else:
+                write_tree_dir(item, fp, depth + 1)
+    
+    fp = open(file, "w", encoding="utf-8")
+    write_tree_dir(obj, fp, 0)
+    fp.close()
 
 def main():
     datetime = time.strftime(datetime_format)
@@ -108,6 +119,7 @@ def main():
             if os.path.isdir(path):
                 dirtree = read_dir(path)
                 write_json(dirtree, filename.format(type = "j"))
+                write_tree(dirtree, filename.format(type = "t"))
             else:
                 print("目录", path, "不存在")
     else:
