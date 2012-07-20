@@ -32,7 +32,7 @@ def read_dir(path):
         
         #读取子项目列表
         try:
-            subitem_name = sorted(os.listdir(path))
+            subitem_name = sorted(os.listdir(path), key = str.lower)
         except:
             print("列出目录", path, "的子项目时发生异常")
             subitem_name = []
@@ -126,7 +126,7 @@ def write_list(obj, file):
     desc = []
     write_list_dir(obj, obj["name"][:-1])
     desc.append("")
-    with open(file, "w", encoding="utf-8") as fp:
+    with open(file, "w", encoding = "utf-8") as fp:
         fp.write("\n".join(desc))
 
 def main():
@@ -159,7 +159,7 @@ def main():
             if os.path.isfile(path):
                 dirtree = read_json(path)
                 def sort_dir(obj):
-                    obj["sub"].sort(key = lambda x: x["name"])
+                    obj["sub"].sort(key = lambda x: x["name"].lower())
                     for x in obj["sub"]:
                         if "sub" in x:
                             sort_dir(x)
