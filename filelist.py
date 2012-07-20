@@ -33,31 +33,36 @@ def read_dir(path):
     如果该项目是一个目录，那么有一个"sub"键，值为该目录的子项目的列表
     如果该项目是一个文件，那么有"size"和"time"键，值分别为该文件的大小和修改时间
     """
-    result = {"name": os.path.basename(path)}
+    def read_dir_(path):
+        result = {"name": os.path.basename(path)}
+        
+        #读取子项目列表
+        try:
+            subitem_name = sorted(os.listdir(path))
+        except:
+            print("列出目录", path, "的子项目时发生异常")
+            subitem_name = []
+        
+        #扩展子项目
+        subitem = []
+        for x in subitem_name:
+            newpath = os.path.join(path, x)
+            if not os.path.isdir(newpath):
+                newitem = {"name": x}
+                try:
+                    info = os.stat(newpath)
+                    newitem["size"] = info.st_size
+                    newitem["time"] = info.st_mtime
+                except:
+                    print("读取文件", newpath, "的信息时发生异常")
+            else:
+                newitem = read_dir_(newpath)
+            subitem.append(newitem)
+        result["sub"] = subitem
+        return result
     
-    #读取子项目列表
-    try:
-        subitem_name = sorted(os.listdir(path))
-    except:
-        print("列出目录", path, "的子项目时发生异常")
-        subitem_name = []
-    
-    #扩展子项目
-    subitem = []
-    for x in subitem_name:
-        newpath = os.path.join(path, x)
-        if not os.path.isdir(newpath):
-            newitem = {"name": x}
-            try:
-                info = os.stat(newpath)
-                newitem["size"] = info.st_size
-                newitem["time"] = info.st_mtime
-            except:
-                print("读取文件", newpath, "的信息时发生异常")
-        else:
-            newitem = read_dir(newpath)
-        subitem.append(newitem)
-    result["sub"] = subitem
+    result = read_dir_(path)
+    result["name"] = path[4:]
     return result
 
 def write_json(obj, file):
