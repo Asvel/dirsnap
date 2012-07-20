@@ -109,6 +109,23 @@ def write_tree(obj, file, indent = "\t"):
     with open(file, "w", encoding="utf-8") as fp:
         fp.write("\n".join(desc))
 
+def write_list(obj, file):
+    
+    def write_list_dir(obj, path):
+        path += "\\"
+        desc.append(path)
+        for item in obj["sub"]:
+            if "sub" not in item:
+                desc.append(path + item["name"])
+            else:
+                write_list_dir(item, path + item["name"])
+
+    desc = []
+    write_list_dir(obj, obj["name"][:-1])
+    desc.append("")
+    with open(file, "w", encoding="utf-8") as fp:
+        fp.write("\n".join(desc))
+
 def main():
     datetime = time.strftime(datetime_format)
     if (len(sys.argv) > 2):
@@ -121,6 +138,7 @@ def main():
                 dirtree = read_dir(path)
                 write_json(dirtree, filename.format(type = "j"))
                 write_tree(dirtree, filename.format(type = "t"))
+                write_list(dirtree, filename.format(type = "l"))
             else:
                 print("目录", path, "不存在")
     else:
