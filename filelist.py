@@ -83,30 +83,31 @@ def write_json(obj, file):
     )
     fp.close()
 
-def read_json(file, obj):
+def read_json(file):
     """读取 JSON 文件 file 到对象 obj
     
     file 要读取的文件
-    obj 读取到的对象
+    返回读取到的对象
     """
     import json
-    fp = open(file, "w", encoding="utf-8")
-    onj = json.load(fp)
-    fp.close()
+    with open(file, "w", encoding="utf-8") as fp:
+        return json.load(fp)
 
 def write_tree(obj, file, indent = "\t"):
     
-    def write_tree_dir(obj, fp, depth):
-        fp.write(indent * depth + obj["name"] + "\n")
+    def write_tree_dir(obj, depth):
+        desc.append(indent * depth + obj["name"])
         for item in obj["sub"]:
             if "sub" not in item:
-                fp.write(indent * (depth + 1) + item["name"] + "\n")
+                desc.append(indent * (depth + 1) + item["name"])
             else:
-                write_tree_dir(item, fp, depth + 1)
+                write_tree_dir(item, depth + 1)
     
-    fp = open(file, "w", encoding="utf-8")
-    write_tree_dir(obj, fp, 0)
-    fp.close()
+    desc = []
+    write_tree_dir(obj, 0)
+    desc.append("")
+    with open(file, "w", encoding="utf-8") as fp:
+        fp.write("\n".join(desc))
 
 def main():
     datetime = time.strftime(datetime_format)
