@@ -2,7 +2,24 @@ import os
 import sys
 import time
 
+datetime_format = "%Y%m%d_%H%M%S"
+filename_format = "fl{type}_{datetime}_{path}.txt"
+#filename_json
+
+filename_invalid = "\/:*?\"<>|"
+
 os.stat_float_times(False)
+
+def make_longunc(path):
+    """生成长 UNC 路径
+    
+    path 要生成长 UNC 路径的路径
+    返回 path 的长 UNC 形式
+    如果 path 本来就是长 UNC 路径则原样返回
+    """
+    if not path.startswith("\\\\?\\"):
+        path = "\\\\?\\" + path
+    return path
 
 def read_dir(path):
     """抓取目录列表为一个字典
@@ -61,24 +78,43 @@ def write_json(obj, file):
     )
     fp.close()
 
+def read_json(file, obj):
+    """读取 JSON 文件 file 到对象 obj
+    
+    file 要读取的文件
+    obj 读取到的对象
+    """
+    import json
+    fp = open(file, "w", encoding="utf-8")
+    onj = json.load(fp)
+    fp.close()
+
+def write_list(obj, file):
+    pass
+
 def main():
-    if (len(sys.argv) == 2):
-        if os.path.exists(sys.argv[1]):
-            path = sys.argv[1]
-            output_name = time.strftime("%Y%m%d_%H%M%S_")
-            output_name += path.replace(":", "").replace("\\", "_").strip("_")
-            path = "\\\\?\\" + path
-            #print(path, output_name)
-            if (os.path.isdir(path)):
-                x = read_dir(path)
-                #write_xml(x, output_name + ".xml")
-                write_json(x, output_name + ".json")
-                #write_json_compact(x, output_name + ".compact.json")
-                #"""
-        else:
-            print("项目", sys.argv[1], "不存在")
+    datetime = time.strftime(datetime_format)
+    if (len(sys.argv) > 2):
+        command = sys.argv[1]
+        if (command == "get"):
+            path = make_longunc(sys.argv[2])
+            filename = filename_format.format(type = "{type}", datetime = datetime, 
+                path = path.translate(str.maketrans({k: "_" for k in filename_invalid})).strip("_"))
+            if os.path.isdir(path):
+                dirtree = read_dir(path)
+                write_json(dirtree, filename.format(type = "j"))
+            else:
+                print("目录", path, "不存在")
     else:
-        pass
+        print("""
+使用方法：
+    filelist.py <命令> <参数>
+
+命令：
+    get 抓取文件列表并输出，参数为要抓取的目录
+
+示例：
+    filelist.py get C:\\""")
 
 if __name__ == "__main__":
     main()
