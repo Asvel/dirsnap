@@ -164,7 +164,9 @@ def main():
                         if "sub" in x:
                             sort_dir(x)
                 sort_dir(dirtree)
-                write_json(dirtree, path) 
+                write_json(dirtree, path)
+            else: 
+                print("文件", path, "不存在")
     else:
         print("""
 使用方法：
