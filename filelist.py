@@ -2,12 +2,6 @@ import os
 import sys
 import time
 
-datetime_format = "%Y%m%d_%H%M%S"
-filename_format = "fl{type}_{datetime}_{path}.txt"
-#filename_json
-
-filename_invalid = "\/:*?\"<>|"
-
 os.stat_float_times(False)
 
 def make_longunc(path):
@@ -90,11 +84,16 @@ def read_json(file):
     返回读取到的对象
     """
     import json
-    with open(file, "w", encoding="utf-8") as fp:
+    with open(file, "r", encoding="utf-8") as fp:
         return json.load(fp)
 
 def write_tree(obj, file, indent = "\t"):
+    """输出对象 obj 为树形文件 file
     
+    obj 要输出的对象，应由 read_dir() 生成
+    file 输出到的文件
+    indent 缩进
+    """
     def write_tree_dir(obj, depth):
         desc.append(indent * depth + obj["name"])
         for item in obj["sub"]:
@@ -110,7 +109,11 @@ def write_tree(obj, file, indent = "\t"):
         fp.write("\n".join(desc))
 
 def write_list(obj, file):
+    """输出对象 obj 为列表文件 file
     
+    obj 要输出的对象，应由 read_dir() 生成
+    file 输出到的文件
+    """
     def write_list_dir(obj, path):
         path += "\\"
         desc.append(path)
@@ -127,20 +130,41 @@ def write_list(obj, file):
         fp.write("\n".join(desc))
 
 def main():
-    datetime = time.strftime(datetime_format)
-    if (len(sys.argv) > 2):
+    if len(sys.argv) > 2:
         command = sys.argv[1]
-        if (command == "get"):
+        if command == "get": #抓取
+            #输出文件名格式
+            datetime_format = "%Y%m%d_%H%M%S"
+            filename_format = "fl{type}_{datetime}_{path}.txt"
+            filename_invalid = "\/:*?\"<>|"
+            
+            #准备
             path = make_longunc(sys.argv[2])
+            datetime = time.strftime(datetime_format)
             filename = filename_format.format(type = "{type}", datetime = datetime, 
                 path = path.translate(str.maketrans({k: "_" for k in filename_invalid})).strip("_"))
+            
             if os.path.isdir(path):
+                #抓取
                 dirtree = read_dir(path)
+                
+                #输出
                 write_json(dirtree, filename.format(type = "j"))
                 write_tree(dirtree, filename.format(type = "t"))
                 write_list(dirtree, filename.format(type = "l"))
             else:
                 print("目录", path, "不存在")
+        elif command == "re-json": #重构 JSON 文件
+            path = make_longunc(sys.argv[2])
+            if os.path.isfile(path):
+                dirtree = read_json(path)
+                def sort_dir(obj):
+                    obj["sub"].sort(key = lambda x: x["name"])
+                    for x in obj["sub"]:
+                        if "sub" in x:
+                            sort_dir(x)
+                sort_dir(dirtree)
+                write_json(dirtree, path) 
     else:
         print("""
 使用方法：
@@ -148,6 +172,7 @@ def main():
 
 命令：
     get 抓取文件列表并输出，参数为要抓取的目录
+    re-json 重构(排序，缩进) JSON 文件
 
 示例：
     filelist.py get C:\\""")
