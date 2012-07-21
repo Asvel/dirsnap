@@ -30,8 +30,9 @@ def read_dir(path):
     def read_dir_(path):
         
         def attrlist(dict, attr):
-            return ([0] + [x[""][attr] for x in dict.values() if "" in x]
-                + [x[attr] for x in dict.values() if attr in x and "" not in x])
+            v = dict.values()
+            return [0] + [x[""][attr] for x in v if "" in x] + \
+                [x[attr] for x in v if ("" not in x) and (attr in x)]
 
         #读取子项目列表
         try:
