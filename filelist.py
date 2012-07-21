@@ -28,8 +28,11 @@ def read_dir(path):
     如果该项目是一个目录，那么有一个"zsub"键，值为该目录的子项目的列表
     """
     def read_dir_(path):
-        result = {"name": os.path.basename(path)}
         
+        def attrlist(dict, attr):
+            return ([0] + [x[""][attr] for x in dict.values() if "" in x]
+                + [x[attr] for x in dict.values() if attr in x and "" not in x])
+
         #读取子项目列表
         try:
             subitem_name = sorted(os.listdir(path), key = str.lower)
@@ -38,11 +41,11 @@ def read_dir(path):
             subitem_name = []
         
         #扩展子项目
-        subitem = []
+        subitem = {}
         for x in subitem_name:
             newpath = os.path.join(path, x)
             if not os.path.isdir(newpath):
-                newitem = {"name": x}
+                newitem = {}
                 try:
                     info = os.stat(newpath)
                     newitem["size"] = info.st_size
@@ -51,15 +54,16 @@ def read_dir(path):
                     print("读取文件", newpath, "的信息时发生异常")
             else:
                 newitem = read_dir_(newpath)
-            subitem.append(newitem)
-        result["zsub"] = subitem
-        result["size"] = sum([x["size"] for x in subitem if "size" in x] + [0])
-        result["time"] = max([x["time"] for x in subitem if "time" in x] + [0])
-        return result
+            subitem[x] = newitem
+        size = sum(attrlist(subitem, "size"))
+        time = max(attrlist(subitem, "time"))
+        subitem[""] = {"size": size, "time": time}
+        return subitem
     
-    result = read_dir_(path)
-    result["name"] = path[4:].strip("\\")
-    return result
+    #result = read_dir_(path)
+    #result["name"] = path[4:].strip("\\")
+    #return result
+    return read_dir_(path)
 
 def write_json(obj, file):
     """输出可序列化的对象 obj 为 JSON 文件 file
@@ -152,8 +156,8 @@ def main():
                 
                 #输出
                 write_json(dirtree, filename.format(type = "j"))
-                write_tree(dirtree, filename.format(type = "t"))
-                write_list(dirtree, filename.format(type = "l"))
+                #write_tree(dirtree, filename.format(type = "t"))
+                #write_list(dirtree, filename.format(type = "l"))
             else:
                 print("目录", path, "不存在")
         elif command == "re-json": #重构 JSON 文件
