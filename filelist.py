@@ -53,6 +53,8 @@ def read_dir(path):
                 newitem = read_dir_(newpath)
             subitem.append(newitem)
         result["sub"] = subitem
+        result["size"] = sum([x["size"] for x in subitem if "size" in x] + [0])
+        result["time"] = max([x["time"] for x in subitem if "time" in x] + [0])
         return result
     
     result = read_dir_(path)
