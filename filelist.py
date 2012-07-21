@@ -23,9 +23,9 @@ def read_dir(path):
     返回值的结构：
     返回值由嵌套的字典和列表构成
     每个字典表示一个项目（文件或目录），每个列表包含一组字典
-    每个字典有一个"name"键，值为该项目的名字
-    如果该项目是一个目录，那么有一个"sub"键，值为该目录的子项目的列表
-    如果该项目是一个文件，那么有"size"和"time"键，值分别为该文件的大小和修改时间
+    每个字典有"name"键、"size"键和"time"键
+    值为分别为该项目的名字、大小和修改时间
+    如果该项目是一个目录，那么有一个"zsub"键，值为该目录的子项目的列表
     """
     def read_dir_(path):
         result = {"name": os.path.basename(path)}
@@ -52,7 +52,7 @@ def read_dir(path):
             else:
                 newitem = read_dir_(newpath)
             subitem.append(newitem)
-        result["sub"] = subitem
+        result["zsub"] = subitem
         result["size"] = sum([x["size"] for x in subitem if "size" in x] + [0])
         result["time"] = max([x["time"] for x in subitem if "time" in x] + [0])
         return result
@@ -98,8 +98,8 @@ def write_tree(obj, file, indent = "\t"):
     """
     def write_tree_dir(obj, depth):
         desc.append(indent * depth + obj["name"])
-        for item in obj["sub"]:
-            if "sub" not in item:
+        for item in obj["zsub"]:
+            if "zsub" not in item:
                 desc.append(indent * (depth + 1) + item["name"])
             else:
                 write_tree_dir(item, depth + 1)
@@ -119,8 +119,8 @@ def write_list(obj, file):
     def write_list_dir(obj, path):
         path += "\\"
         desc.append(path)
-        for item in obj["sub"]:
-            if "sub" not in item:
+        for item in obj["zsub"]:
+            if "zsub" not in item:
                 desc.append(path + item["name"])
             else:
                 write_list_dir(item, path + item["name"])
@@ -161,9 +161,9 @@ def main():
             if os.path.isfile(path):
                 dirtree = read_json(path)
                 def sort_dir(obj):
-                    obj["sub"].sort(key = lambda x: x["name"].lower())
-                    for x in obj["sub"]:
-                        if "sub" in x:
+                    obj["zsub"].sort(key = lambda x: x["name"].lower())
+                    for x in obj["zsub"]:
+                        if "zsub" in x:
                             sort_dir(x)
                 sort_dir(dirtree)
                 write_json(dirtree, path)
