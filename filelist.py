@@ -58,7 +58,7 @@ def read_dir(path):
         return result
     
     result = read_dir_(path)
-    result["name"] = path[4:]
+    result["name"] = path[4:].strip("\\")
     return result
 
 def write_json(obj, file):
