@@ -31,7 +31,7 @@ def read_dir(path):
     #抓取时间
     now = int(time.time())
     
-    def read_dir_(path):
+    def read_a_dir(path):
         
         def attrlist(dict, attr):
             v = dict.values()
@@ -58,14 +58,14 @@ def read_dir(path):
                 except:
                     print("读取文件", newpath, "的信息时发生异常")
             else:
-                newitem = read_dir_(newpath)
+                newitem = read_a_dir(newpath)
             subitem[x] = newitem
         size = sum(attrlist(subitem, "size"))
         time = max(attrlist(subitem, "time"))
         subitem[""] = {"size": size, "time": time}
         return subitem
     
-    result = read_dir_(path)
+    result = read_a_dir(path)
     result[""]["from"] = path[4:].strip("\\")
     result[""]["time"] = now
     return result
