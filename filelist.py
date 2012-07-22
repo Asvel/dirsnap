@@ -28,19 +28,20 @@ def read_dir(path):
     如果该项目是一个目录，那么有一个"zsub"键，值为该目录的子项目的列表
     """
     
-    #抓取当前时间
+    # 保存抓取时间
     now = int(time.time())
     
+    # 读取一个目录
     def read_a_dir(path):
         
-        #读取子项目列表
+        # 获取子项目列表
         try:
-            subitem_name = sorted(os.listdir(path), key = str.lower)
+            subitem_name = os.listdir(path)
         except:
-            print("列出目录", path, "的子项目时发生异常")
+            print("获取此目录的子项目时发生异常：", path[4:])
             return {"size": 0, "time": -1, "|": {}}
         
-        #扩展子项目
+        # 获取子项目属性
         subitem = {}
         for x in subitem_name:
             newpath = os.path.join(path, x)
@@ -49,12 +50,13 @@ def read_dir(path):
                     info = os.stat(newpath)
                     newitem = {"size": info.st_size, "time": info.st_mtime}
                 except:
-                    print("读取文件", newpath, "的信息时发生异常")
+                    print("获取此文件的属性时发生异常：", newpath[4:])
                     newitem = {"size": 0, "time": -1}
             else:
                 newitem = read_a_dir(newpath)
             subitem[x] = newitem
         
+        # 计算此目录属性
         size = sum([x["size"] for x in subitem.values()] + [0])
         time = max([x["time"] for x in subitem.values()] + [0])
         return {"size": size, "time": time, "|": subitem}
