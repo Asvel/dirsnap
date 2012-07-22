@@ -27,6 +27,10 @@ def read_dir(path):
     值为分别为该项目的名字、大小和修改时间
     如果该项目是一个目录，那么有一个"zsub"键，值为该目录的子项目的列表
     """
+    
+    #抓取时间
+    now = int(time.time())
+    
     def read_dir_(path):
         
         def attrlist(dict, attr):
@@ -61,10 +65,10 @@ def read_dir(path):
         subitem[""] = {"size": size, "time": time}
         return subitem
     
-    #result = read_dir_(path)
-    #result["name"] = path[4:].strip("\\")
-    #return result
-    return read_dir_(path)
+    result = read_dir_(path)
+    result[""]["from"] = path[4:].strip("\\")
+    result[""]["time"] = now
+    return result
 
 def write_json(obj, file):
     """输出可序列化的对象 obj 为 JSON 文件 file
