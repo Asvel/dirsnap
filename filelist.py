@@ -28,47 +28,40 @@ def read_dir(path):
     如果该项目是一个目录，那么有一个"zsub"键，值为该目录的子项目的列表
     """
     
-    #抓取时间
+    #抓取当前时间
     now = int(time.time())
     
     def read_a_dir(path):
         
-        def attrlist(dict, attr):
-            v = dict.values()
-            return [0] + [x[""][attr] for x in v if "" in x] + \
-                [x[attr] for x in v if ("" not in x) and (attr in x)]
-
         #读取子项目列表
         try:
             subitem_name = sorted(os.listdir(path), key = str.lower)
         except:
             print("列出目录", path, "的子项目时发生异常")
-            subitem_name = []
+            return {"size": 0, "time": -1, "|": {}}
         
         #扩展子项目
         subitem = {}
         for x in subitem_name:
             newpath = os.path.join(path, x)
             if not os.path.isdir(newpath):
-                newitem = {}
                 try:
                     info = os.stat(newpath)
-                    newitem["size"] = info.st_size
-                    newitem["time"] = info.st_mtime
+                    newitem = {"size": info.st_size, "time": info.st_mtime}
                 except:
                     print("读取文件", newpath, "的信息时发生异常")
-                newitem = {"" : newitem}
+                    newitem = {"size": 0, "time": -1}
             else:
                 newitem = read_a_dir(newpath)
             subitem[x] = newitem
-        size = sum(attrlist(subitem, "size"))
-        time = max(attrlist(subitem, "time"))
-        subitem[""] = {"size": size, "time": time}
-        return subitem
+        
+        size = sum([x["size"] for x in subitem.values()] + [0])
+        time = max([x["time"] for x in subitem.values()] + [0])
+        return {"size": size, "time": time, "|": subitem}
     
     result = read_a_dir(path)
-    result[""]["from"] = path[4:].strip("\\")
-    result[""]["time"] = now
+    result["from"] = path[4:].strip("\\")
+    result["time"] = now
     return result
 
 def write_json(obj, file):
