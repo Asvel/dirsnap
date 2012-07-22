@@ -57,6 +57,7 @@ def read_dir(path):
                     newitem["time"] = info.st_mtime
                 except:
                     print("读取文件", newpath, "的信息时发生异常")
+                newitem = {"" : newitem}
             else:
                 newitem = read_a_dir(newpath)
             subitem[x] = newitem
