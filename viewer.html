@@ -44,10 +44,6 @@
 			list-style-type: none;
 		}
 		
-		li:hover {
-			background: #EEE;
-		}
-		
 		li.item span {
 			display: inline-block;
 			font-family: monospace;
@@ -89,6 +85,7 @@
 
 		dirobj = null;
 		stat = Object();
+		stat.dir_first = true;
 		
 		function listitem(isdir, name, size, time) {
 			this.isdir = isdir;
@@ -160,9 +157,13 @@
 		
 		function list_sort(key) {
 			stat.list.sort(function (a, b) {
-				return a[key].toLowerCase().localeCompare(b[key].toLowerCase());
+				if (stat.dir_first && (a.isfile != b.isfile)) {
+					return a.isfile - b.isfile
+				}
+				else {
+					return a[key].toLowerCase().localeCompare(b[key].toLowerCase());
+				}
 			});
-			return true;
 		}
 		
 		function curpos_change() {
