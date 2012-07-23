@@ -2,8 +2,6 @@ import os
 import sys
 import time
 
-os.stat_float_times(False)
-
 def make_longunc(path):
     """生成长 UNC 路径
     
@@ -39,7 +37,7 @@ def read_dir(path):
             subitem_name = os.listdir(path)
         except:
             print("获取此目录的子项目时发生异常：", path[4:])
-            return {"size": 0, "time": -1, "|": {}}
+            return {"size": 0, "time": -1, "item": {}}
         
         # 获取子项目属性
         subitem = {}
@@ -59,9 +57,11 @@ def read_dir(path):
         # 计算此目录属性
         size = sum([x["size"] for x in subitem.values()] + [0])
         time = max([x["time"] for x in subitem.values()] + [0])
-        return {"size": size, "time": time, "|": subitem}
+        return {"size": size, "time": time, "item": subitem}
     
+    os.stat_float_times(False)
     result = read_a_dir(path)
+    os.stat_float_times(True)
     result["from"] = path[4:].strip("\\")
     result["time"] = now
     return result
@@ -72,16 +72,24 @@ def write_json(obj, file):
     obj 要输出的对象
     file 输出到的文件
     """
+    
+    def rename_key_for_sort(obj):
+        for x in obj["item"].values():
+            if "item" in x:
+                rename_key_for_sort(x)
+        obj["|item"] = obj["item"]
+        del obj["item"]
+        return obj
+
     import json
     fp = open(file, "w", encoding="utf-8")
-    json.dump(
-        obj = obj,
-        fp = fp,
+    fp.write(json.dumps(
+        obj = rename_key_for_sort(obj),
         ensure_ascii = False,
         check_circular = False,
         sort_keys = True,
         indent = "\t"
-    )
+    ).replace("|", ""))
     fp.close()
 
 def read_json(file):
@@ -142,21 +150,22 @@ def main():
         if command == "get": #抓取
             #输出文件名格式
             datetime_format = "%Y%m%d_%H%M%S"
-            filename_format = "fl{type}_{datetime}_{path}.txt"
+            filename_format = "{path}_{datetime}.json"
             filename_invalid = "\/:*?\"<>|"
+            filename_trans = str.maketrans({x: "_" for x in filename_invalid})
             
             #准备
             path = make_longunc(sys.argv[2])
             datetime = time.strftime(datetime_format)
-            filename = filename_format.format(type = "{type}", datetime = datetime, 
-                path = path.translate(str.maketrans({k: "_" for k in filename_invalid})).strip("_"))
+            filename = filename_format.format(datetime = datetime, 
+                path = path.strip(":\\?").translate(filename_trans))
             
             if os.path.isdir(path):
                 #抓取
                 dirtree = read_dir(path)
                 
                 #输出
-                write_json(dirtree, filename.format(type = "j"))
+                write_json(dirtree, filename)
                 #write_tree(dirtree, filename.format(type = "t"))
                 #write_list(dirtree, filename.format(type = "l"))
             else:
