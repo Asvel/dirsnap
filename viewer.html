@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>文件列表查看</title>
 	<style type="text/css">
 		* {
@@ -101,12 +101,12 @@
 		
 		function curpos_change() {
 			var pos = curpos();
-			if (pos == "") pos = dirobj.name + '\\';
+			if (pos == "") pos = dirobj.from + '\\';
 
 			var nav_text = "";
 			var nav_html = "";
 			
-			var from = dirobj[""].from;
+			var from = dirobj.from;
 			if (pos.slice(0, from.length) == from) {
 				nav_text += from + '\\';
 				nav_html += make_a(nav_text, from) + '\\';
@@ -117,26 +117,24 @@
 					var k = pos.indexOf('\\');
 					var name = pos.slice(0, k);
 					pos = pos.slice(k + 1);
-					obj = obj[name];
+					obj = obj.item[name];
 					nav_text += name + '\\';
 					nav_html += make_a(nav_text, name) + '\\';
 				}
 			}
 			
 			stat.pos = nav_text;
-			stat.size = obj[""].size;
+			stat.size = obj.size;
 			$("#header").empty().append(nav_html);
 			
 			var list = Array();
-			for (x in obj) {
-				if (x != "") {
-					list.push(new listitem(
-						("" in obj[x]) ? "dir" : "file",
-						x,
-						("" in obj[x]) ? obj[x][""].size : ("size" in obj[x]) ? obj[x].size : 0,
-						("" in obj[x]) ? obj[x][""].time : ("time" in obj[x]) ? obj[x].time : 0
-					))
-				}
+			for (x in obj.item) {
+				list.push(new listitem(
+					("item" in obj.item[x]) ? "dir" : "file",
+					x,
+					obj.item[x].size,
+					obj.item[x].time
+				))
 			}
 			stat.list = list;
 			list_sort("name");
