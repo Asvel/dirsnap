@@ -19,11 +19,25 @@ def read_dir(path):
     path 要抓取的目录
     
     返回值的结构：
-    返回值由嵌套的字典和列表构成
-    每个字典表示一个项目（文件或目录），每个列表包含一组字典
-    每个字典有"name"键、"size"键和"time"键
-    值为分别为该项目的名字、大小和修改时间
-    如果该项目是一个目录，那么有一个"zsub"键，值为该目录的子项目的列表
+    {
+        "from": <抓取的目录>
+        "size": <抓取到的文件的总大小>
+        "time": <抓取时间（秒）>
+        "item": {
+            <文件名>: {
+                size: <该文件的大小>
+                time: <该文件的修改时间>
+            }
+            <目录名>: {
+                size: <该目录的子项目的总大小>
+                time: <该目录的子项目的最后修改时间>
+                item：{
+                    <子项目，格式同上，递归结构>
+                } 
+            }
+            ...
+        }
+    }
     """
     
     # 保存抓取时间
@@ -58,7 +72,7 @@ def read_dir(path):
         size = sum([x["size"] for x in subitem.values()] + [0])
         time = max([x["time"] for x in subitem.values()] + [0])
         return {"size": size, "time": time, "item": subitem}
-    
+
     os.stat_float_times(False)
     result = read_a_dir(path)
     os.stat_float_times(True)
@@ -67,12 +81,13 @@ def read_dir(path):
     return result
 
 def write_json(obj, file):
-    """输出可序列化的对象 obj 为 JSON 文件 file
+    """输出 read_dir() 生成的对象 obj 为 JSON 文件 file
     
     obj 要输出的对象
     file 输出到的文件
     """
     
+    # 修改键名用于排序（子项目排在最后）
     def rename_key_for_sort(obj):
         for x in obj["item"].values():
             if "item" in x:
@@ -82,15 +97,14 @@ def write_json(obj, file):
         return obj
 
     import json
-    fp = open(file, "w", encoding="utf-8")
-    fp.write(json.dumps(
-        obj = rename_key_for_sort(obj),
-        ensure_ascii = False,
-        check_circular = False,
-        sort_keys = True,
-        indent = "\t"
-    ).replace("|", ""))
-    fp.close()
+    with open(file, "w", encoding="utf-8") as fp:
+        fp.write(json.dumps(
+            obj = rename_key_for_sort(obj),
+            ensure_ascii = False,
+            check_circular = False,
+            sort_keys = True,
+            indent = "\t"
+        ).replace("|", ""))
 
 def read_json(file):
     """读取 JSON 文件 file 到对象 obj
