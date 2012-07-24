@@ -9,7 +9,7 @@ def make_longunc(path):
     返回 path 的长 UNC 形式
     如果 path 本来就是长 UNC 路径则原样返回
     """
-    if not path.startswith("\\\\?\\"):
+    if (os.path.__name__ == "ntpath") and (not path.startswith("\\\\?\\")):
         path = "\\\\?\\" + path
     return path
 
@@ -76,7 +76,7 @@ def read_dir(path):
     os.stat_float_times(False)
     result = read_a_dir(path)
     os.stat_float_times(True)
-    result["from"] = path[4:].strip("\\")
+    result["from"] = path.strip("\\?")
     result["time"] = now
     return result
 
