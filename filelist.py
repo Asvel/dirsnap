@@ -169,7 +169,7 @@ def main():
             filename_trans = str.maketrans({x: "_" for x in filename_invalid})
             
             #准备
-            path = make_longunc(os.path.abspath(sys.argv[2]))
+            path = make_longunc(os.path.abspath(sys.argv[2] + "\\"))
             datetime = time.strftime(datetime_format)
             filename = filename_format.format(datetime = datetime, 
                 path = path.strip(":\\?").translate(filename_trans))
