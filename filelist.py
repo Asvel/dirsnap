@@ -169,7 +169,7 @@ def main():
             filename_trans = str.maketrans({x: "_" for x in filename_invalid})
             
             #准备
-            path = make_longunc(sys.argv[2])
+            path = make_longunc(os.path.abspath(sys.argv[2]))
             datetime = time.strftime(datetime_format)
             filename = filename_format.format(datetime = datetime, 
                 path = path.strip(":\\?").translate(filename_trans))
@@ -185,7 +185,7 @@ def main():
             else:
                 print("目录", path, "不存在")
         elif command == "re-json": #重构 JSON 文件
-            path = make_longunc(sys.argv[2])
+            path = make_longunc(os.path.abspath(sys.argv[2]))
             if os.path.isfile(path):
                 dirtree = read_json(path)
                 def sort_dir(obj):
