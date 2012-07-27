@@ -2,17 +2,6 @@ import os
 import sys
 import time
 
-def make_longunc(path):
-    '''生成长 UNC 路径
-    
-    path 要生成长 UNC 路径的路径
-    返回 path 的长 UNC 形式
-    如果 path 本来就是长 UNC 路径则原样返回
-    '''
-    if (os.path.__name__ == 'ntpath') and (not path.startswith('\\\\?\\')):
-        path = '\\\\?\\' + path
-    return path
-
 def read_dir(path):
     '''抓取目录列表为一个字典
     
@@ -159,16 +148,73 @@ def write_list(obj, file):
         fp.write('\n'.join(desc))
 
 def main():
+    
+    import argparse
+    parser = argparse.ArgumentParser(description='抓取目录快照')
+    args = parser.parse_args()
+    
+    return
+    
+    filename_invalid = '\\/:*?"<>|'
+
+    def make_longunc(path):
+        '''生成长 UNC 路径
+        
+        path 要生成长 UNC 路径的路径
+        返回 path 的长 UNC 形式
+        如果 path 本来就是长 UNC 路径则原样返回
+        '''
+        if (os.path.__name__ == 'ntpath') and not path.startswith('\\\\?\\'):
+            path = '\\\\?\\' + path
+        return path
+    
+    def show_help():
+        print('''
+抓取目录快照
+
+用法：
+    odGraber.py [-from[:{dir|json}]] <fpath> [-to[:{json|tree|list}] <tpath>]
+
+参数：
+    -from 数据来源，冒号后为来源类型，默认为 dir
+        dir  来自一个目录，抓取目录快照
+        json 由 odGraber 生成的 JSON 文件
+    <fpath> 数据来源路径
+    -to 保存结果到，冒号后为储存格式，默认为 json
+        json JSON
+        tree 树形缩进
+        list 全路径列表
+    <tpath> 保存结果的文件
+
+备注：
+    当参数 -to 没有被省略时不可省略参数 -from
+    可以从同时把 form 和 to 设置为 json 来重新整理 JSON 文件
+
+示例：
+    odGraber.py C:\
+    odGraber.py -from C:\ -to result.json
+    odGraber.py -from C:\ -to:tree
+    odGraber.py -from:json test.json -to:json test.json 
+    odGraber.py -from:json test.json -to:list list.txt 
+''')
+    
+    filename_trans = str.maketrans({x: '_' for x in filename_invalid})
+
+    from_type = ''
+    to_type = ''
+    
     if len(sys.argv) == 1:
-        pass
-    elif len(sys.argv) > 2:
-        command = sys.argv[1]
+        show_help()
+    elif len(sys.argv) == 2:
+        from_path = sys.argv[1]
+        to_path = '{path}_{datetime}.json'.format(
+            path = from_path.strip(filename_invalid).translate(filename_trans),
+            datetime = time.strftime('%Y%m%d_%H%M%S'))
+    elif len(sys.argv) == 5:
+        from_type = sys.argv[2][5]
+        to_type = sys.argv[4][5]
         if command == 'get': #抓取
             #输出文件名格式
-            datetime_format = '%Y%m%d_%H%M%S'
-            filename_format = '{path}_{datetime}.json'
-            filename_invalid = '\/:*?"<>|'
-            filename_trans = str.maketrans({x: '_' for x in filename_invalid})
             
             #准备
             path = make_longunc(os.path.abspath(sys.argv[2] + '\\'))
