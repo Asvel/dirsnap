@@ -78,15 +78,16 @@ def read_json(file):
     with open(file, 'r', encoding='utf-8') as fp:
         return json.load(fp)
 
-def write_json(obj, file):
+def dump_json(obj):
     '''输出 read_dir() 生成的对象 obj 为 JSON 文件 file
     
     obj 要输出的对象
     file 输出到的文件
     '''
     
-    # 修改键名用于排序（子项目排在最后）
     def rename_key_for_sort(obj):
+        '''修改键名用于排序（子项目排在最后）
+        '''
         for x in obj['item'].values():
             if 'item' in x:
                 rename_key_for_sort(x)
@@ -95,53 +96,52 @@ def write_json(obj, file):
         return obj
 
     import json
-    with open(file, 'w', encoding='utf-8') as fp:
-        fp.write(json.dumps(
-            obj = rename_key_for_sort(obj),
-            ensure_ascii = False,
-            check_circular = False,
-            sort_keys = True,
-            indent = '\t'
-        ).replace('|', ''))
+    return json.dumps(
+        obj = rename_key_for_sort(obj),
+        ensure_ascii = False,
+        check_circular = False,
+        sort_keys = True,
+        indent = '\t'
+    ).replace('|', '')
 
-def write_tree(obj, file, indent = '\t'):
+def dump_tree(obj, indent = '\t'):
     '''输出对象 obj 为树形文件 file
     
     obj 要输出的对象，应由 read_dir() 生成
     file 输出到的文件
     indent 缩进
     '''
-    def write_tree_dir(obj, depth):
+    def dump_tree_dir(obj, depth):
         desc.append(indent * depth + obj['name'])
         for item in obj['zsub']:
             if 'zsub' not in item:
                 desc.append(indent * (depth + 1) + item['name'])
             else:
-                write_tree_dir(item, depth + 1)
+                dump_tree_dir(item, depth + 1)
     
     desc = []
-    write_tree_dir(obj, 0)
+    dump_tree_dir(obj, 0)
     desc.append('')
     with open(file, 'w', encoding='utf-8') as fp:
         fp.write('\n'.join(desc))
 
-def write_list(obj, file):
+def dump_list(obj):
     '''输出对象 obj 为列表文件 file
     
     obj 要输出的对象，应由 read_dir() 生成
     file 输出到的文件
     '''
-    def write_list_dir(obj, path):
+    def dump_list_dir(obj, path):
         path += '\\'
         desc.append(path)
         for item in obj['zsub']:
             if 'zsub' not in item:
                 desc.append(path + item['name'])
             else:
-                write_list_dir(item, path + item['name'])
+                dump_list_dir(item, path + item['name'])
 
     desc = []
-    write_list_dir(obj, obj['name'][:-1])
+    dump_list_dir(obj, obj['name'][:-1])
     desc.append('')
     with open(file, 'w', encoding = 'utf-8') as fp:
         fp.write('\n'.join(desc))
@@ -213,8 +213,9 @@ def main():
     topath = make_longunc(os.path.abspath(topath))
     
     # 操作！
-    dirsnap =eval('read_{type}(frompath)'.format(type = args.fromtype))
-    eval('write_{type}(dirsnap, topath)'.format(type = args.totype))
+    dirsnap =eval('read_{}(frompath)'.format(args.fromtype))
+    with open(topath, 'w', encoding='utf-8') as fp:
+        fp.write(eval('dump_{}(dirsnap)'.format(args.totype)))
 
 if __name__ == '__main__':
     main()
