@@ -165,22 +165,25 @@ def main():
         description='抓取和转换目录快照',
         epilog='''\
 备注：
-  from 和 to 可以相同
-  可以通过使用相同的来源和结果类型来重新整理文件文件
+  from 和 to 可以相同，参考示例5
+  当 from 为目录时 fromtype 默认为 dir，为文件时默认为 json，参考示例4
+  当 from 或 to 以 - 开头时需要放在参数 -- 后， 参考示例7
 
 示例：
   %(prog)s C:
   %(prog)s C: result.json
   %(prog)s C: -tt list
-  %(prog)s -ft json test.json -tt list list.txt
+  %(prog)s test.json -tt tree
   %(prog)s -ft json test.json test.json
+  %(prog)s -ft json test.json -tt list list.txt
+  %(prog)s -ft json -tt tree -- -ftest.json -ttest.txt
 ''',
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('frompath', metavar='from', help='数据来源')
     parser.add_argument('topath', metavar='to', nargs='?', help='保存结果到')
     parser.add_argument('-ft', '--fromtype', default='dir',
         choices=['dir', 'json'],
-        help='数据来源类型，默认为 %(default)s')
+        help='数据来源类型，默认为 dir 或 json （见备注）')
     parser.add_argument('-tt', '--totype', default='json',
         choices=['json', 'tree', 'list'],
         help='结果储存格式，默认为 %(default)s')
@@ -199,6 +202,8 @@ def main():
 
     # 准备路径信息
     frompath = make_longunc(os.path.abspath(args.frompath + os.sep))
+    if not os.path.isdir(frompath):
+        args.fromtype = 'json'
     if args.topath == None:
         if args.fromtype == 'dir':
             trans = str.maketrans({x: '_' for x in '\\/:*?"<>|'})
@@ -212,10 +217,16 @@ def main():
         topath = args.topath
     topath = make_longunc(os.path.abspath(topath))
     
+    if not os.path.exists(frompath):
+        parser.error('项目 {} 不存在'.format(frompath))
+    
     # 操作！
     dirsnap =eval('read_{}(frompath)'.format(args.fromtype))
-    with open(topath, 'w', encoding='utf-8') as fp:
-        fp.write(eval('dump_{}(dirsnap)'.format(args.totype)))
+    try:
+        with open(topath, 'w', encoding='utf-8') as fp:
+            fp.write(eval('dump_{}(dirsnap)'.format(args.totype)))
+    except:
+        parser.error('文件 {} 创建失败'.format(topath))
 
 if __name__ == '__main__':
     main()
