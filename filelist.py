@@ -4,7 +4,7 @@ import time
 import json
 import locale
 
-def read_dir(path):
+def load_dir(path):
     '''抓取目录列表为一个字典
     
     path 要抓取的目录
@@ -32,7 +32,7 @@ def read_dir(path):
     '''
     
     # 读取一个目录
-    def read_a_dir(path):
+    def load_a_dir(path):
         
         # 获取子项目列表
         try:
@@ -53,7 +53,7 @@ def read_dir(path):
                     print('获取此文件的属性时发生异常：', newpath[4:])
                     newitem = {'size': 0, 'time': -1}
             else:
-                newitem = read_a_dir(newpath)
+                newitem = load_a_dir(newpath)
             subitem[x] = newitem
         
         # 计算此目录属性
@@ -65,22 +65,21 @@ def read_dir(path):
     now = float(time.time())
     
     # 抓取并添加信息
-    result = read_a_dir(path)
+    result = load_a_dir(path)
     result['from'] = path.strip('\\?')
     result['time'] = now
     return result
 
-def read_json(file):
-    '''读取 JSON 文件 file 到对象 obj
+def load_json(s):
+    '''读取并整理 JSON 字符串 s
     
-    file 要读取的文件
+    s 包含 JSON 的字符串
     返回读取到的对象
     '''
-    with open(file, 'r', encoding='utf-8') as fp:
-        return json.load(fp)
+    return json.loads(s)
 
 def dump_json(obj):
-    '''输出 read_dir() 生成的对象 obj 为 JSON 文件 file
+    '''输出 load_dir() 生成的对象 obj 为 JSON 文件 file
     
     obj 要输出的对象
     file 输出到的文件
@@ -112,7 +111,7 @@ def _filename_sort_key(s):
 def dump_tree(obj, indent = '\t'):
     '''由对象 obj 生成树形表示的字符串
     
-    obj 作为数据源的对象，应符合 read_dir() 的格式
+    obj 作为数据源的对象，应符合 load_dir() 的格式
     indent 缩进使用的字符串
     '''
     locale.setlocale(locale.LC_COLLATE, '')
@@ -130,7 +129,7 @@ def dump_tree(obj, indent = '\t'):
 def dump_list(obj):
     '''由对象 obj 生成列表表示的字符串
     
-    obj 作为数据源的对象，应符合 read_dir() 的格式
+    obj 作为数据源的对象，应符合 load_dir() 的格式
     '''
     locale.setlocale(locale.LC_COLLATE, '')
 
@@ -221,7 +220,11 @@ def main():
         parser.error('项目 {} 不存在'.format(frompath))
     
     # 操作！
-    dirsnap =eval('read_{}(frompath)'.format(args.fromtype))
+    if args.fromtype == 'dir':
+        dirsnap = load_dir(frompath)
+    else:
+        with open(frompath, 'r', encoding='utf-8') as fp:
+            dirsnap = eval('load_{}(fp.read())'.format(args.fromtype))
     try:
         with open(topath, 'w', encoding='utf-8') as fp:
             fp.write(eval('dump_{}(dirsnap)'.format(args.totype)))
