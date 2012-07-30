@@ -29,9 +29,6 @@ def read_dir(path):
     }
     '''
     
-    # 保存抓取时间
-    now = int(time.time())
-    
     # 读取一个目录
     def read_a_dir(path):
         
@@ -62,12 +59,26 @@ def read_dir(path):
         time = max([x['time'] for x in subitem.values()] + [0])
         return {'size': size, 'time': time, 'item': subitem}
 
+    # 保存抓取时间
+    now = int(time.time())
+    
+    # 抓取并添加信息
     os.stat_float_times(False)
     result = read_a_dir(path)
     os.stat_float_times(True)
     result['from'] = path.strip('\\?')
     result['time'] = now
     return result
+
+def read_json(file):
+    '''读取 JSON 文件 file 到对象 obj
+    
+    file 要读取的文件
+    返回读取到的对象
+    '''
+    import json
+    with open(file, 'r', encoding='utf-8') as fp:
+        return json.load(fp)
 
 def write_json(obj, file):
     '''输出 read_dir() 生成的对象 obj 为 JSON 文件 file
@@ -94,16 +105,6 @@ def write_json(obj, file):
             sort_keys = True,
             indent = '\t'
         ).replace('|', ''))
-
-def read_json(file):
-    '''读取 JSON 文件 file 到对象 obj
-    
-    file 要读取的文件
-    返回读取到的对象
-    '''
-    import json
-    with open(file, 'r', encoding='utf-8') as fp:
-        return json.load(fp)
 
 def write_tree(obj, file, indent = '\t'):
     '''输出对象 obj 为树形文件 file
@@ -149,13 +150,43 @@ def write_list(obj, file):
 
 def main():
     
+    # 命令行解析
     import argparse
-    parser = argparse.ArgumentParser(description='抓取目录快照')
+    class ArgumentParser(argparse.ArgumentParser):
+        def format_usage(self):
+            return argparse.ArgumentParser.format_usage(self)\
+                .replace('usage:', '用法：')
+        def format_help(self):
+            return argparse.ArgumentParser.format_help(self)\
+                .replace('usage:', '用法：')\
+                .replace('positional arguments:', '参数：')\
+                .replace('\n\noptional arguments:', '')\
+                .replace('show this help message and exit', '显示此帮助并退出')
+    
+    parser = ArgumentParser(
+        description='抓取和转换目录快照',
+        epilog='''\
+备注：
+  from 和 to 可以相同
+  可以通过使用相同的来源和结果类型来重新整理文件文件
+
+示例：
+  %(prog)s C:
+  %(prog)s C: result.json
+  %(prog)s C: -tt list
+  %(prog)s -ft json test.json -tt list list.txt
+  %(prog)s -ft json test.json test.json
+''',
+        formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('frompath', metavar='from', help='数据来源')
+    parser.add_argument('topath', metavar='to', nargs='?', help='保存结果到')
+    parser.add_argument('-ft', '--fromtype', default='dir',
+        choices=['dir', 'json'],
+        help='数据来源类型，默认为 %(default)s')
+    parser.add_argument('-tt', '--totype', default='json',
+        choices=['json', 'tree', 'list'],
+        help='结果储存格式，默认为 %(default)s')
     args = parser.parse_args()
-    
-    return
-    
-    filename_invalid = '\\/:*?"<>|'
 
     def make_longunc(path):
         '''生成长 UNC 路径
@@ -167,95 +198,25 @@ def main():
         if (os.path.__name__ == 'ntpath') and not path.startswith('\\\\?\\'):
             path = '\\\\?\\' + path
         return path
-    
-    def show_help():
-        print('''
-抓取目录快照
 
-用法：
-    odGraber.py [-from[:{dir|json}]] <fpath> [-to[:{json|tree|list}] <tpath>]
-
-参数：
-    -from 数据来源，冒号后为来源类型，默认为 dir
-        dir  来自一个目录，抓取目录快照
-        json 由 odGraber 生成的 JSON 文件
-    <fpath> 数据来源路径
-    -to 保存结果到，冒号后为储存格式，默认为 json
-        json JSON
-        tree 树形缩进
-        list 全路径列表
-    <tpath> 保存结果的文件
-
-备注：
-    当参数 -to 没有被省略时不可省略参数 -from
-    可以从同时把 form 和 to 设置为 json 来重新整理 JSON 文件
-
-示例：
-    odGraber.py C:\
-    odGraber.py -from C:\ -to result.json
-    odGraber.py -from C:\ -to:tree
-    odGraber.py -from:json test.json -to:json test.json 
-    odGraber.py -from:json test.json -to:list list.txt 
-''')
-    
-    filename_trans = str.maketrans({x: '_' for x in filename_invalid})
-
-    from_type = ''
-    to_type = ''
-    
-    if len(sys.argv) == 1:
-        show_help()
-    elif len(sys.argv) == 2:
-        from_path = sys.argv[1]
-        to_path = '{path}_{datetime}.json'.format(
-            path = from_path.strip(filename_invalid).translate(filename_trans),
-            datetime = time.strftime('%Y%m%d_%H%M%S'))
-    elif len(sys.argv) == 5:
-        from_type = sys.argv[2][5]
-        to_type = sys.argv[4][5]
-        if command == 'get': #抓取
-            #输出文件名格式
-            
-            #准备
-            path = make_longunc(os.path.abspath(sys.argv[2] + '\\'))
-            datetime = time.strftime(datetime_format)
-            filename = filename_format.format(datetime = datetime, 
-                path = path.strip(':\\?').translate(filename_trans))
-            
-            if os.path.isdir(path):
-                #抓取
-                dirtree = read_dir(path)
-                
-                #输出
-                write_json(dirtree, filename)
-                #write_tree(dirtree, filename.format(type = 't'))
-                #write_list(dirtree, filename.format(type = 'l'))
-            else:
-                print('目录', path, '不存在')
-        elif command == 're-json': #重构 JSON 文件
-            path = make_longunc(os.path.abspath(sys.argv[2]))
-            if os.path.isfile(path):
-                dirtree = read_json(path)
-                def sort_dir(obj):
-                    obj['zsub'].sort(key = lambda x: x['name'].lower())
-                    for x in obj['zsub']:
-                        if 'zsub' in x:
-                            sort_dir(x)
-                sort_dir(dirtree)
-                write_json(dirtree, path)
-            else: 
-                print('文件', path, '不存在')
+    # 准备路径信息
+    frompath = make_longunc(os.path.abspath(args.frompath + '\\'))
+    if args.topath == None:
+        if args.fromtype == 'dir':
+            trans = str.maketrans({x: '_' for x in '\\/:*?"<>|'})
+            topath = frompath.strip(':\\?').translate(trans)
+            topath += time.strftime('_%Y%m%d_%H%M%S')
+        else:
+            topath = os.path.os.path.splitext(frompath)[0]
+        typetrans = {'json':'.json', 'tree':'_tree.txt', 'list':'_list.txt'}
+        topath += typetrans[args.totype]
     else:
-        print('''
-使用方法：
-    filelist.py <命令> <参数>
-
-命令：
-    get 抓取文件列表并输出，参数为要抓取的目录
-    re-json 重构(排序，缩进) JSON 文件
-
-示例：
-    filelist.py get C:\\''')
+        topath = args.topath
+    topath = make_longunc(os.path.abspath(topath))
+    
+    # 操作！
+    dirsnap =eval('read_{type}(frompath)'.format(type = args.fromtype))
+    eval('write_{type}(dirsnap, topath)'.format(type = args.totype))
 
 if __name__ == '__main__':
     main()
