@@ -1,6 +1,8 @@
 import os
 import sys
 import time
+import json
+import locale
 
 def read_dir(path):
     '''抓取目录列表为一个字典
@@ -74,7 +76,6 @@ def read_json(file):
     file 要读取的文件
     返回读取到的对象
     '''
-    import json
     with open(file, 'r', encoding='utf-8') as fp:
         return json.load(fp)
 
@@ -95,7 +96,6 @@ def dump_json(obj):
         del obj['item']
         return obj
 
-    import json
     return json.dumps(
         obj = rename_key_for_sort(obj),
         ensure_ascii = False,
@@ -104,47 +104,47 @@ def dump_json(obj):
         indent = '\t'
     ).replace('|', '')
 
-def dump_tree(obj, indent = '\t'):
-    '''输出对象 obj 为树形文件 file
-    
-    obj 要输出的对象，应由 read_dir() 生成
-    file 输出到的文件
-    indent 缩进
+def _filename_sort_key(s):
+    '''返回排序文件名的键值
     '''
-    def dump_tree_dir(obj, depth):
-        desc.append(indent * depth + obj['name'])
-        for item in obj['zsub']:
-            if 'zsub' not in item:
-                desc.append(indent * (depth + 1) + item['name'])
-            else:
-                dump_tree_dir(item, depth + 1)
+    return locale.strxfrm(s.lower())
+
+def dump_tree(obj, indent = '\t'):
+    '''由对象 obj 生成树形表示的字符串
     
-    desc = []
+    obj 作为数据源的对象，应符合 read_dir() 的格式
+    indent 缩进使用的字符串
+    '''
+    locale.setlocale(locale.LC_COLLATE, '')
+
+    def dump_tree_dir(obj, depth):
+        for name in sorted(obj['item'].keys(), key=_filename_sort_key):
+            desc.append(indent * (depth + 1) + name)
+            if 'item' in obj['item'][name]:
+                dump_tree_dir(obj['item'][name], depth + 1)
+
+    desc = [obj['from']]
     dump_tree_dir(obj, 0)
-    desc.append('')
-    with open(file, 'w', encoding='utf-8') as fp:
-        fp.write('\n'.join(desc))
+    return '\n'.join(desc)
 
 def dump_list(obj):
-    '''输出对象 obj 为列表文件 file
+    '''由对象 obj 生成列表表示的字符串
     
-    obj 要输出的对象，应由 read_dir() 生成
-    file 输出到的文件
+    obj 作为数据源的对象，应符合 read_dir() 的格式
     '''
-    def dump_list_dir(obj, path):
-        path += '\\'
-        desc.append(path)
-        for item in obj['zsub']:
-            if 'zsub' not in item:
-                desc.append(path + item['name'])
-            else:
-                dump_list_dir(item, path + item['name'])
+    locale.setlocale(locale.LC_COLLATE, '')
 
-    desc = []
-    dump_list_dir(obj, obj['name'][:-1])
-    desc.append('')
-    with open(file, 'w', encoding = 'utf-8') as fp:
-        fp.write('\n'.join(desc))
+    def dump_list_dir(obj, path):
+        for name in sorted(obj['item'].keys(), key=_filename_sort_key):
+            fullname = os.path.join(path, name)
+            desc.append(fullname)
+            if 'item' in obj['item'][name]:
+                desc[-1] += os.sep
+                dump_list_dir(obj['item'][name], fullname)
+
+    desc = [obj['from'] + os.sep]
+    dump_list_dir(obj, obj['from'] + os.sep)
+    return '\n'.join(desc)
 
 def main():
     
@@ -198,7 +198,7 @@ def main():
         return path
 
     # 准备路径信息
-    frompath = make_longunc(os.path.abspath(args.frompath + '\\'))
+    frompath = make_longunc(os.path.abspath(args.frompath + os.sep))
     if args.topath == None:
         if args.fromtype == 'dir':
             trans = str.maketrans({x: '_' for x in '\\/:*?"<>|'})
