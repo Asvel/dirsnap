@@ -60,12 +60,10 @@ def read_dir(path):
         return {'size': size, 'time': time, 'item': subitem}
 
     # 保存抓取时间
-    now = int(time.time())
+    now = float(time.time())
     
     # 抓取并添加信息
-    os.stat_float_times(False)
     result = read_a_dir(path)
-    os.stat_float_times(True)
     result['from'] = path.strip('\\?')
     result['time'] = now
     return result
