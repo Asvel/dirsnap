@@ -48,7 +48,8 @@ def load_dir(path):
             if not os.path.isdir(newpath):
                 try:
                     info = os.stat(newpath)
-                    newitem = {'size': info.st_size, 'time': info.st_mtime}
+                    newitem = {'size': info.st_size,
+                        'time': int(info.st_mtime * 1000)}
                 except:
                     print('获取此文件的属性时发生异常：', newpath[4:])
                     newitem = {'size': 0, 'time': -1}
