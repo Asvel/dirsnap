@@ -63,7 +63,7 @@ def load_dir(path):
         return {'size': size, 'time': time, 'item': subitem}
 
     # 保存抓取时间
-    now = float(time.time())
+    now = int(time.time() * 1000)
 
     # 抓取并添加信息
     result = load_a_dir(path)
