@@ -30,17 +30,17 @@ def load_dir(path):
         }
     }
     '''
-    
+
     # 读取一个目录
     def load_a_dir(path):
-        
+
         # 获取子项目列表
         try:
             subitem_name = os.listdir(path)
         except:
             print('获取此目录的子项目时发生异常：', path[4:])
-            return {'size': 0, 'time': -1, 'item': {}}
-        
+            return {'size': 0, 'time':-1, 'item': {}}
+
         # 获取子项目属性
         subitem = {}
         for x in subitem_name:
@@ -52,11 +52,11 @@ def load_dir(path):
                         'time': int(info.st_mtime * 1000)}
                 except:
                     print('获取此文件的属性时发生异常：', newpath[4:])
-                    newitem = {'size': 0, 'time': -1}
+                    newitem = {'size': 0, 'time':-1}
             else:
                 newitem = load_a_dir(newpath)
             subitem[x] = newitem
-        
+
         # 计算此目录属性
         size = sum([x['size'] for x in subitem.values()] + [0])
         time = max([x['time'] for x in subitem.values()] + [0])
@@ -64,7 +64,7 @@ def load_dir(path):
 
     # 保存抓取时间
     now = float(time.time())
-    
+
     # 抓取并添加信息
     result = load_a_dir(path)
     result['from'] = path.strip('\\?')
@@ -85,7 +85,7 @@ def dump_json(obj):
     obj 要输出的对象
     file 输出到的文件
     '''
-    
+
     def rename_key_for_sort(obj):
         '''修改键名用于排序（子项目排在最后）
         '''
@@ -97,11 +97,11 @@ def dump_json(obj):
         return obj
 
     return json.dumps(
-        obj = rename_key_for_sort(obj),
-        ensure_ascii = False,
-        check_circular = False,
-        sort_keys = True,
-        indent = '\t'
+        obj=rename_key_for_sort(obj),
+        ensure_ascii=False,
+        check_circular=False,
+        sort_keys=True,
+        indent='\t'
     ).replace('|', '')
 
 def _filename_sort_key(s):
@@ -109,7 +109,7 @@ def _filename_sort_key(s):
     '''
     return locale.strxfrm(s.lower())
 
-def dump_tree(obj, indent = '\t'):
+def dump_tree(obj, indent='\t'):
     '''由对象 obj 生成树形表示的字符串
     
     obj 作为数据源的对象，应符合 load_dir() 的格式
@@ -147,7 +147,7 @@ def dump_list(obj):
     return '\n'.join(desc)
 
 def main():
-    
+
     # 命令行解析
     import argparse
     class ArgumentParser(argparse.ArgumentParser):
@@ -160,7 +160,7 @@ def main():
                 .replace('positional arguments:', '参数：')\
                 .replace('\n\noptional arguments:', '')\
                 .replace('show this help message and exit', '显示此帮助并退出')
-    
+
     parser = ArgumentParser(
         description='抓取和转换目录快照',
         epilog='''\
@@ -216,16 +216,18 @@ def main():
     else:
         topath = args.topath
     topath = make_longunc(os.path.abspath(topath))
-    
+
     if not os.path.exists(frompath):
         parser.error('项目 {} 不存在'.format(frompath))
-    
-    # 操作！
+
+    # 读
     if args.fromtype == 'dir':
         dirsnap = load_dir(frompath)
     else:
         with open(frompath, 'r', encoding='utf-8') as fp:
             dirsnap = eval('load_{}(fp.read())'.format(args.fromtype))
+
+    # 写
     try:
         with open(topath, 'w', encoding='utf-8') as fp:
             fp.write(eval('dump_{}(dirsnap)'.format(args.totype)))
