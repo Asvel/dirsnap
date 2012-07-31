@@ -110,7 +110,7 @@
 			function pad(n) {
 				return n < 10 ? '0' + n : n
 			}
-			var d = new Date(time * 1000);
+			var d = new Date(time);
 			return d.getFullYear().toString().slice(2) + '-' +
 				pad(d.getMonth() + 1) + '-' +
 				pad(d.getDate()) + ' ' +
