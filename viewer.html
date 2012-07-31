@@ -51,6 +51,11 @@
 			font-family: monospace;
 		}
 		
+		li.item span.checkbox {
+			padding-right: 3px;
+			border-right: 1px dashed #7F7F7F;
+		}
+		
 		li.item span.time {
 			width: 120px;
 			text-align: center;
@@ -136,6 +141,7 @@
 		function list_show() {
 			var item_format = '\
 <li class="item {type}">\
+<span class="checkbox"><input type="checkbox"></span>\
 <span class="time">{time}</span>\
 <span class="size">{size}</span>\
 <span class="name">{name}</span>\
