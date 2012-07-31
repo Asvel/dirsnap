@@ -33,7 +33,8 @@ def load_dir(path):
 
     # 读取一个目录
     def load_a_dir(path):
-
+        '''递归抓取目录
+        '''
         # 获取子项目列表
         try:
             subitem_name = os.listdir(path)
@@ -77,7 +78,21 @@ def load_json(s):
     s 包含 JSON 的字符串
     返回读取到的对象
     '''
-    return json.loads(s)
+
+    def re_obj(obj):
+        '''重新计算目录属性
+        '''
+        for item in obj['item'].values():
+            if 'item' in item:
+                re_obj(item)
+        obj['size'] = sum([x['size'] for x in obj['item'].values()] + [0])
+        obj['time'] = max([x['time'] for x in obj['item'].values()] + [0])
+
+    obj = json.loads(s)
+    time = obj['time']
+    re_obj(obj)
+    obj['time'] = time
+    return obj
 
 def dump_json(obj):
     '''输出 load_dir() 生成的对象 obj 为 JSON 文件 file
@@ -118,6 +133,8 @@ def dump_tree(obj, indent='\t'):
     locale.setlocale(locale.LC_COLLATE, '')
 
     def dump_tree_dir(obj, depth):
+        '''递归生成树形
+        '''
         for name in sorted(obj['item'].keys(), key=_filename_sort_key):
             desc.append(indent * (depth + 1) + name)
             if 'item' in obj['item'][name]:
@@ -135,6 +152,8 @@ def dump_list(obj):
     locale.setlocale(locale.LC_COLLATE, '')
 
     def dump_list_dir(obj, path):
+        '''递归生成列表
+        '''
         for name in sorted(obj['item'].keys(), key=_filename_sort_key):
             fullname = os.path.join(path, name)
             desc.append(fullname)
