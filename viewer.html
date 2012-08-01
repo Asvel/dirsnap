@@ -90,6 +90,13 @@
 			});
 		};
 
+		function encodeURIx(str) {
+			return encodeURIComponent(str).replace(/[!'()*]/g, escape);
+		}
+		function decodeURIx(str) {
+			return decodeURIComponent(str);
+		}
+		
 		dirobj = null;
 		stat = Object();
 		stat.dir_first = true;
@@ -126,10 +133,11 @@
 		}
 		
 		function curpos() {
-			if ((location.hash.length > 1) && (location.hash.slice(-1) != '/'))
-				return location.hash.slice(1).replace('/', '\\', "g") + '\\';
+			hash = decodeURIx(location.hash)
+			if ((hash.length > 1) && (hash.slice(-1) != '/'))
+				return hash.slice(1).replace('/', '\\', "g") + '\\';
 			else
-				return location.hash.slice(1).replace('/', '\\', "g")
+				return hash.slice(1).replace('/', '\\', "g")
 		}
 		
 		function make_anchor(href, text) {
@@ -156,7 +164,7 @@
 				item = stat.list[i];
 				$("#list").append(item_format.format({
 					"type": item.isdir ? "dir" : "file",
-					"name": item.isdir ? make_anchor(stat.pos + item.name, item.name) : item.name,
+					"name": item.isdir ? make_anchor(encodeURIx(stat.pos + item.name), item.name) : item.name,
 					"time": fmttime(item.time),
 					"size": fmtsize(item.size)
 				}));
