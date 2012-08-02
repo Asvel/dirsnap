@@ -30,50 +30,47 @@
 			font-family: monospace;
 		}
 		
-		ul#list {
+		#main ul {
 			margin: 0;
 			padding: 0;
+			list-style-type: none;
 		}
 		
-		li.title {
+		#main ul#listheader {
 			border-bottom: 1px dashed #7F7F7F;
 			margin-bottom: 1px;
 		}
 		
-		li.item {
-			list-style-type: none;
+		#main ul span {
+			display: inline-block;
+			font-family: monospace;
 			overflow: hidden;
 			white-space: nowrap;
 		}
 		
-		li.item span {
-			display: inline-block;
-			font-family: monospace;
-		}
-		
-		li.item span.checkbox {
+		#main ul span.checkbox {
 			padding-right: 3px;
 			border-right: 1px dashed #7F7F7F;
 		}
 		
-		li.item span.time {
+		#main ul span.time {
 			width: 120px;
 			text-align: center;
 			padding-right: 2px;
 		}
 		
-		li.item span.size {
+		#main ul span.size {
 			width:60px;
 			text-align: right;
 			padding: 0 6px 0 2px;
 			border-left: 1px dashed #7F7F7F;
 			border-right: 1px dashed #7F7F7F;
 		}
-		li.title span.size {
+		#main ul#listheader span.size {
 			text-align: center;
 		}
 		
-		li.item span.name {
+		#main ul span.name {
 			margin-left: 6px;
 		}
 	</style>
@@ -157,13 +154,8 @@
 <span class="time">{time}</span>\
 <span class="size">{size}</span>\
 <span class="name">{name}</span>\
-</li>';
-			$("#list").empty().append(item_format.format({
-					"type": "title",
-					"name": "名称",
-					"time": "修改时间",
-					"size": "大小"
-			}));
+</li>\n';
+			$("#list").empty();
 			for (var i in stat.list) {
 				item = stat.list[i];
 				$("#list").append(item_format.format({
@@ -243,7 +235,12 @@
 		<div id="nav"></div>
     </div>
     <div id="main" class="main">
-		<ul id="list"></ul>
+		<ul id="listheader">
+			<li><span class="checkbox"><input type="checkbox" /></span><span class="time">修改时间</span><span class="size">大小</span><span class="name">名称</span></li>
+		</ul>
+		<ul id="list">
+			<li></li>
+		</ul>
     </div>
 </body>
 </html>
