@@ -77,6 +77,24 @@
 		#main ul span.name {
 			margin-left: 6px;
 		}
+		
+		#main ul span.quick {
+			background: #FFFFC0;
+			float: right;
+			padding-left: 4px;
+			padding-right: 4px;
+			position: relative;
+			top: -19px;
+			display: none;
+		}
+		#main ul span.quick a {
+			outline: 1px solid;
+		}
+		
+		#main ul#list li:hover > span.quick {
+			display: inline-block;
+		}
+		
 	</style>
     <script type="text/javascript">
 		//<![CDATA[
@@ -163,6 +181,7 @@
 <span class="time">{time}</span>\
 <span class="size">{size}</span>\
 <span class="name">{name}</span>\
+<span class="quick"><a href="#">名</a></span>\
 </li>\n';
 			$("#list").empty();
 			for (var i in stat.list) {
@@ -231,7 +250,6 @@
 
 		$(document).ready(function () {
 			var jsonfile = location.search.slice(1);
-			$("#dirfirst")[0].checked = true;
 			$.get(jsonfile, function (result) {
 				dirobj = result;
 				curpos_change();
@@ -247,13 +265,13 @@
 			list_sort(stat.sortname);
 			list_show();
 		}
-		
+
 		// ]]>
 	</script>
 </head>
 <body>
     <div id="header" class="main">
-		<div><input id="dirfirst" type="checkbox" onchange="dirfirst_change(this);"/><label for="dirfirst">目录排在文件前面</label></div>
+		<div><input id="dirfirst" type="checkbox" onchange="dirfirst_change(this);" checked="true" /><label for="dirfirst">目录排在文件前面</label></div>
 		<div id="nav"></div>
     </div>
     <div id="main" class="main">
