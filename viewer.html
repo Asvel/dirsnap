@@ -25,15 +25,15 @@
 			background-color: #FEFEFE;
 			margin: 2px;
 		}
-		
+
 		label {
 			font-size: 14px;
 		}
-		
+
 		#nav {
 			font-family: monospace;
 		}
-		
+
 		#main ul {
 			margin: 0;
 			padding: 0;
@@ -41,28 +41,28 @@
 			overflow: hidden;
 			white-space: nowrap;
 		}
-		
+
 		#main ul#listheader {
 			border-bottom: 1px dashed #7F7F7F;
 			margin-bottom: 1px;
 		}
-		
+
 		#main ul span {
 			display: inline-block;
 			font-family: monospace;
 		}
-		
+
 		#main ul span.checkbox {
 			padding-right: 3px;
 			border-right: 1px dashed #7F7F7F;
 		}
-		
+
 		#main ul span.time {
 			width: 120px;
 			text-align: center;
 			padding-right: 2px;
 		}
-		
+
 		#main ul span.size {
 			width:60px;
 			text-align: right;
@@ -73,11 +73,11 @@
 		#main ul#listheader span.size {
 			text-align: center;
 		}
-		
+
 		#main ul span.name {
 			margin-left: 6px;
 		}
-		
+
 		#main ul span.quick {
 			background: #FFFFC0;
 			float: right;
@@ -90,11 +90,11 @@
 		#main ul span.quick a {
 			outline: 1px solid;
 		}
-		
+
 		#main ul#list li:hover > span.quick {
 			display: inline-block;
 		}
-		
+
 	</style>
     <script type="text/javascript">
 		//<![CDATA[
@@ -119,24 +119,24 @@
 		function decodeURIx(str) {
 			return decodeURIComponent(str);
 		}
-		
+
 		dirobj = null;
 		stat = Object();
 		stat.dirfirst = true;
 		stat.sortname = "name"
-		
+
 		function listitem(isdir, name, size, time) {
 			this.isdir = isdir;
 			this.isfile = !isdir;
-			
+
 			this.name = name;
 			this.size = size;
 			this.time = time;
-			
+
 			this.size_text = fmtsize(size);
 			this.time_text = fmttime(time);
 		}
-		
+
 		function fmtsize(size) {
 			//var name = ['  B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 			var name = ['&nbsp;B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
@@ -147,7 +147,7 @@
 			}
 			return Number(size.toString().slice(0, 4)).toString() + " " + name[k];
 		}
-		
+
 		function fmttime(time) {
 			function pad(n) {
 				return n < 10 ? '0' + n : n
@@ -157,9 +157,9 @@
 				pad(d.getMonth() + 1) + '-' +
 				pad(d.getDate()) + ' ' +
 				pad(d.getHours()) + ':' +
-				pad(d.getMinutes());  
+				pad(d.getMinutes());
 		}
-		
+
 		function curpos() {
 			hash = decodeURIx(location.hash)
 			if ((hash.length > 1) && (hash.slice(-1) != '/'))
@@ -167,13 +167,13 @@
 			else
 				return hash.slice(1).replace('/', '\\', "g")
 		}
-		
+
 		function make_anchor(href, text) {
 			return "<a href='#" + href + "'>" + text + "</a>";
 		}
-		
+
 		window.onhashchange = curpos_change;
-		
+
 		function list_show() {
 			var item_format = '\
 <li class="{type}">\
@@ -194,7 +194,7 @@
 				}));
 			}
 		}
-		
+
 		function list_sort(key) {
 			stat.list.sort(function (a, b) {
 				if (stat.dirfirst && (a.isfile != b.isfile)) {
@@ -205,20 +205,20 @@
 				}
 			});
 		}
-		
+
 		function curpos_change() {
 			var pos = curpos();
 			if (pos == "") pos = dirobj.from + '\\';
 
 			var nav_text = "";
 			var nav_html = "";
-			
+
 			var from = dirobj.from;
 			if (pos.slice(0, from.length) == from) {
 				nav_text += from + '\\';
 				nav_html += make_anchor(nav_text, from) + '\\';
 				pos = pos.slice(from.length + 1);
-				
+
 				var obj = dirobj;
 				while (pos != "") {
 					var k = pos.indexOf('\\');
@@ -229,11 +229,11 @@
 					nav_html += make_anchor(nav_text, name) + '\\';
 				}
 			}
-			
+
 			stat.pos = nav_text;
 			stat.size = obj.size;
 			$("#nav").empty().append(nav_html);
-			
+
 			var list = Array();
 			for (x in obj.item) {
 				list.push(new listitem(
@@ -255,11 +255,11 @@
 				curpos_change();
 			}, "json");
 		});
-		
+
 		function headercheckbox_change(sender) {
 			$("#list input").attr("checked", sender.checked)
 		}
-		
+
 		function dirfirst_change(sender) {
 			stat.dirfirst = sender.checked;
 			list_sort(stat.sortname);
