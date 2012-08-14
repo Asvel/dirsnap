@@ -4,6 +4,15 @@ import time
 import json
 import locale
 
+def _calc_dir_info(obj):
+    '''计算目录属性
+    '''
+    for item in obj['item'].values():
+        if 'item' in item:
+            _calc_dir_info(item)
+    obj['size'] = sum([x['size'] for x in obj['item'].values()] + [0])
+    obj['time'] = max([x['time'] for x in obj['item'].values()] + [0])
+
 def load_dir(path):
     '''抓取目录列表为一个字典
     
@@ -37,7 +46,7 @@ def load_dir(path):
         try:
             subitem_name = os.listdir(path)
         except:
-            print('获取此目录的子项目时发生异常：', path[4:])
+            print('获取此目录的子项目时发生异常：', path.strip('\\?'))
             return {'item': {}}
 
         # 获取子项目属性
@@ -51,7 +60,7 @@ def load_dir(path):
                     newitem['size'] = info.st_size
                     newitem['time'] = int(info.st_mtime * 1000)
                 except:
-                    print('获取此文件的属性时发生异常：', newpath[4:])
+                    print('获取此文件的属性时发生异常：', newpath.strip('\\?'))
             else:
                 newitem = load_a_dir(newpath)
             subitem[x] = newitem
@@ -63,6 +72,7 @@ def load_dir(path):
 
     # 抓取并添加信息
     result = load_a_dir(path)
+    _calc_dir_info(result)
     result['from'] = path.strip('\\?')
     result['time'] = now
     return result
@@ -73,7 +83,9 @@ def load_json(s):
     s 包含 JSON 的字符串
     返回读取到的对象
     '''
-    return json.loads(s)
+    obj = json.loads(s)
+    _calc_dir_info(obj)
+    return obj
 
 def dump_json(obj):
     '''由对象 obj 生成 JSON 格式的字符串
@@ -81,13 +93,23 @@ def dump_json(obj):
     obj 作为数据源的对象
     返回生成的 JSON 格式字符串
     '''
+    def rename_key_for_sort(obj):
+        '''修改键名用于排序（子项目排在最后）
+        '''
+        for x in obj['item'].values():
+            if 'item' in x:
+                rename_key_for_sort(x)
+        obj['|item'] = obj['item']
+        del obj['item']
+        return obj
+
     return json.dumps(
-        obj=obj,
+        obj=rename_key_for_sort(obj),
         ensure_ascii=False,
         check_circular=False,
         sort_keys=True,
         indent='\t'
-    )
+    ).replace('|', '')
 
 def _filename_sort_key(s):
     '''返回排序文件名的键值
