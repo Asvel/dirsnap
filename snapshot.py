@@ -17,11 +17,9 @@ def load_dir(path):
         "item": {
             <文件名>: {
                 "size": <该文件的大小>
-                "time": <该文件的修改时间>
+                "time": <该文件的修改时间（秒）>
             }
             <目录名>: {
-                "size": <该目录的子项目的总大小>
-                "time": <该目录的子项目的最后修改时间>
                 "item"：{
                     <子项目，格式同上，递归结构>
                 } 
@@ -31,7 +29,6 @@ def load_dir(path):
     }
     '''
 
-    # 读取一个目录
     def load_a_dir(path):
         '''递归抓取目录
         '''
@@ -40,28 +37,25 @@ def load_dir(path):
             subitem_name = os.listdir(path)
         except:
             print('获取此目录的子项目时发生异常：', path[4:])
-            return {'size': 0, 'time':-1, 'item': {}}
+            return {'item': {}}
 
         # 获取子项目属性
         subitem = {}
         for x in subitem_name:
             newpath = os.path.join(path, x)
             if not os.path.isdir(newpath):
+                newitem = {'size': 0, 'time': 0}
                 try:
                     info = os.stat(newpath)
-                    newitem = {'size': info.st_size,
-                        'time': int(info.st_mtime * 1000)}
+                    newitem['size'] = info.st_size
+                    newitem['time'] = int(info.st_mtime * 1000)
                 except:
                     print('获取此文件的属性时发生异常：', newpath[4:])
-                    newitem = {'size': 0, 'time':-1}
             else:
                 newitem = load_a_dir(newpath)
             subitem[x] = newitem
 
-        # 计算此目录属性
-        size = sum([x['size'] for x in subitem.values()] + [0])
-        time = max([x['time'] for x in subitem.values()] + [0])
-        return {'size': size, 'time': time, 'item': subitem}
+        return {'item': subitem}
 
     # 保存抓取时间
     now = int(time.time() * 1000)
@@ -100,24 +94,13 @@ def dump_json(obj):
     obj 要输出的对象
     file 输出到的文件
     '''
-
-    def rename_key_for_sort(obj):
-        '''修改键名用于排序（子项目排在最后）
-        '''
-        for x in obj['item'].values():
-            if 'item' in x:
-                rename_key_for_sort(x)
-        obj['|item'] = obj['item']
-        del obj['item']
-        return obj
-
     return json.dumps(
-        obj=rename_key_for_sort(obj),
+        obj=obj,
         ensure_ascii=False,
         check_circular=False,
         sort_keys=True,
         indent='\t'
-    ).replace('|', '')
+    )
 
 def _filename_sort_key(s):
     '''返回排序文件名的键值
