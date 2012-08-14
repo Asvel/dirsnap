@@ -32,6 +32,7 @@ def load_dir(path):
     def load_a_dir(path):
         '''递归抓取目录
         '''
+
         # 获取子项目列表
         try:
             subitem_name = os.listdir(path)
@@ -67,32 +68,18 @@ def load_dir(path):
     return result
 
 def load_json(s):
-    '''读取并整理 JSON 字符串 s
+    '''读取 JSON 格式字符串 s
     
     s 包含 JSON 的字符串
     返回读取到的对象
     '''
-
-    def re_obj(obj):
-        '''重新计算目录属性
-        '''
-        for item in obj['item'].values():
-            if 'item' in item:
-                re_obj(item)
-        obj['size'] = sum([x['size'] for x in obj['item'].values()] + [0])
-        obj['time'] = max([x['time'] for x in obj['item'].values()] + [0])
-
-    obj = json.loads(s)
-    time = obj['time']
-    re_obj(obj)
-    obj['time'] = time
-    return obj
+    return json.loads(s)
 
 def dump_json(obj):
-    '''输出 load_dir() 生成的对象 obj 为 JSON 文件 file
+    '''由对象 obj 生成 JSON 格式的字符串
     
-    obj 要输出的对象
-    file 输出到的文件
+    obj 作为数据源的对象
+    返回生成的 JSON 格式字符串
     '''
     return json.dumps(
         obj=obj,
