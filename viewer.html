@@ -34,64 +34,57 @@
 			font-family: monospace;
 		}
 
-		#main ul {
-			margin: 0;
+		#main table {
+			margin: 0 auto;
 			padding: 0;
-			list-style-type: none;
+			width: 100%;
+			table-layout: fixed;
+			font-family: monospace;
 			overflow: hidden;
 			white-space: nowrap;
 		}
 
-		#main ul#listheader {
+		#list th {
 			border-bottom: 1px dashed #7F7F7F;
-			margin-bottom: 1px;
 		}
-
-		#main ul span {
-			display: inline-block;
-			font-family: monospace;
-		}
-
-		#main ul span.checkbox {
-			padding-right: 3px;
-			border-right: 1px dashed #7F7F7F;
-		}
-
-		#main ul span.time {
-			width: 120px;
-			text-align: center;
-			padding-right: 2px;
-		}
-
-		#main ul span.size {
-			width:60px;
-			text-align: right;
-			padding: 0 6px 0 2px;
+		
+		#list th, #list td {
+			padding: 0 4px;
 			border-left: 1px dashed #7F7F7F;
-			border-right: 1px dashed #7F7F7F;
 		}
-		#main ul#listheader span.size {
+		#list th:first-child, #list td:first-child {
+			border-left: none;
+		}
+
+		#list .time{
+			width: 112px;
 			text-align: center;
 		}
 
-		#main ul span.name {
-			margin-left: 6px;
+		#list .size {
+			width: 56px;
+			text-align: right;
+		}
+		#list th.size {
+			text-align: center;
 		}
 
-		#main ul span.quick {
+		#list .name {
+			margin-left: 6px;
+			text-align: left;
+		}
+
+		#list td.quick {
 			background: #FFFFC0;
 			float: right;
-			padding-left: 4px;
-			padding-right: 4px;
 			position: relative;
-			top: -19px;
 			display: none;
 		}
-		#main ul span.quick a {
+		#list td.quick a {
 			outline: 1px solid;
 		}
 
-		#main ul#list li:hover > span.quick {
+		#list tr:hover > td.quick {
 			display: inline-block;
 		}
 
@@ -176,14 +169,13 @@
 
 		function list_show() {
 			var item_format = '\
-<li class="{type}">\
-<span class="checkbox"><input type="checkbox" /></span>\
-<span class="time">{time}</span>\
-<span class="size">{size}</span>\
-<span class="name">{name}</span>\
-<span class="quick"><a href="#">名</a></span>\
-</li>\n';
-			$("#list").empty();
+<tr class="{type}">\
+<td class="time">{time}</td>\
+<td class="size">{size}</td>\
+<td class="name"><span>{name}<span></td>\
+</tr>\n';
+//<td class="quick"><a href="#">名</a></td>\
+			$("#list").empty().append('<tr><th class="time">修改时间</th><th class="size">大小</th><th class="name">名称</th></tr>');
 			for (var i in stat.list) {
 				item = stat.list[i];
 				$("#list").append(item_format.format({
@@ -275,12 +267,9 @@
 		<div id="nav"></div>
     </div>
     <div id="main" class="main">
-		<ul id="listheader">
-			<li><span class="checkbox"><input type="checkbox" onchange="headercheckbox_change(this);" /></span><span class="time">修改时间</span><span class="size">大小</span><span class="name">名称</span></li>
-		</ul>
-		<ul id="list">
-			<li></li>
-		</ul>
+		<table id="list">
+			<tr><th class="time">修改时间</th><th class="size">大小</th><th class="name">名称</th></tr>
+		</table>
     </div>
 </body>
 </html>
