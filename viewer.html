@@ -74,17 +74,16 @@
 			text-align: left;
 		}
 
-		#list td.quick {
+		#list .quick {
 			background: #FFFFC0;
 			float: right;
 			position: relative;
 			display: none;
 		}
-		#list td.quick a {
+		#list .quick a {
 			outline: 1px solid;
 		}
-
-		#list tr:hover > td.quick {
+		#list td:hover > .quick {
 			display: inline-block;
 		}
 
@@ -172,9 +171,8 @@
 <tr class="{type}">\
 <td class="time">{time}</td>\
 <td class="size">{size}</td>\
-<td class="name"><span>{name}<span></td>\
+<td class="name"><span class="quick"><a href="#">名</a></span>{name}</td>\
 </tr>\n';
-//<td class="quick"><a href="#">名</a></td>\
 			$("#list").empty().append('<tr><th class="time">修改时间</th><th class="size">大小</th><th class="name">名称</th></tr>');
 			for (var i in stat.list) {
 				item = stat.list[i];
