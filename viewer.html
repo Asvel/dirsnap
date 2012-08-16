@@ -244,7 +244,7 @@
 <a href="javascript:;" onclick="copypath_click(this);"></a>\
 </span>{name}</td>\
 </tr>\n';
-			$("#list").empty().append('<tr><th class="time">修改时间</th><th class="size">大小</th><th class="name">名称</th></tr>');
+			$("#list tr + [class!='header']").remove();
 			for (var i in stat.list) {
 				item = stat.list[i];
 				$("#list").append(item_format.format({
@@ -327,18 +327,28 @@
 			list_show();
 		}
 
-		function copypath_click(sender) {
-			var path = stat.pos + sender.parentElement.parentElement.textContent;
+		function popdialogforcopy(text) {
 			stat.dialog = $.dialog({
-				content: path,
-				fixed: true,
+				content: text,
 				lock: true,
 				initialize: function () {
 					$('.d-mask').attr('onclick', 'stat.dialog.close()');
 					$(this.dom.header).remove();
-					select(this.dom.content[0].childNodes[0]);
+					select(this.dom.content[0]);
 				}
 			});
+		}
+
+		function copyall_click(sender) {
+			var paths = []
+			for (i in stat.list) {
+				paths.push(stat.pos + stat.list[i].name)
+			}
+			popdialogforcopy(paths.join('<br />'));
+		}
+		function copypath_click(sender) {
+			var path = stat.pos + sender.parentElement.parentElement.textContent;
+			popdialogforcopy(path);
 		}
 
 		// ]]>
@@ -347,11 +357,20 @@
 <body>
 	<div id="header" class="main">
 		<div><input id="dirfirst" type="checkbox" onchange="dirfirst_change(this);" checked="true" /><label for="dirfirst">目录排在文件前面</label></div>
-		<div id="nav"></div>
+		<div id="nav">&nbsp;</div>
 	</div>
 	<div id="main" class="main">
 		<table id="list">
-			<tr><th class="time">修改时间</th><th class="size">大小</th><th class="name">名称</th></tr>
+			<tr class="header">
+				<th class="time">修改时间</th>
+				<th class="size">大小</th>
+				<th class="name">
+					<span class="quick" style="display: inline-block;">
+						<a href="javascript:;" onclick="copyall_click(this);"></a>
+					</span>
+					名称
+				</th>
+			</tr>
 		</table>
 	</div>
 </body>
