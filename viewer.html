@@ -92,7 +92,8 @@
 		dirobj = null;
 		stat = Object();
 		stat.dirfirst = true;
-		stat.sortname = "name"
+		stat.sortname = ""
+		stat.sortdesc = false;
 
 		function listitem(isdir, name, size, time) {
 			this.isdir = isdir;
@@ -152,7 +153,7 @@
 <a href="javascript:;" onclick="copypath_click(this);"></a>\
 </span>{name}</td>\
 </tr>\n';
-			$("#list tr + [class!='header']").remove();
+			$("#list tr + [class!='head']").remove();
 			for (var i in stat.list) {
 				item = stat.list[i];
 				$("#list").append(item_format.format({
@@ -165,12 +166,21 @@
 		}
 
 		function list_sort(key) {
+			if (stat.sortname == key) {
+				stat.sortdesc = !stat.sortdesc;
+			}
+			else {
+				stat.sortname = key;
+				stat.sortdesc = false;
+			}
+			desc = stat.sortdesc ? -1 : 1;
 			stat.list.sort(function (a, b) {
 				if (stat.dirfirst && (a.isfile != b.isfile)) {
 					return a.isfile - b.isfile
 				}
 				else {
-					return a[key].toLowerCase().localeCompare(b[key].toLowerCase());
+					return a[key].toString().toLowerCase().localeCompare(
+						b[key].toString().toLowerCase()) * desc;
 				}
 			});
 		}
@@ -225,10 +235,6 @@
 			}, "json");
 		});
 
-		function headercheckbox_change(sender) {
-			$("#list input").attr("checked", sender.checked)
-		}
-
 		function dirfirst_change(sender) {
 			stat.dirfirst = sender.checked;
 			list_sort(stat.sortname);
@@ -257,6 +263,15 @@
 		function copypath_click(sender) {
 			var path = stat.pos + sender.parentElement.parentElement.textContent;
 			popdialogforcopy(path);
+		}
+
+		function head_click(sender, type) {
+			$('.sort').remove();
+			list_sort(type);
+			$(sender).after('<span class="sort">{mark}</span>'.format({
+				'mark': stat.sortdesc ? '▼' : '▲'
+			}));
+			list_show();
 		}
 
 		// ]]>
@@ -348,10 +363,14 @@
 			height: 16px;
 			margin-top: 2px;
 		}
-		#list td:hover > .quick {
+		#list :hover > .quick {
 			display: inline-block;
 		}
 
+		#list .sort {
+			font-size: 12px;
+			color: #999;
+		}
 	</style>
 </head>
 <body>
@@ -361,14 +380,18 @@
 	</div>
 	<div id="main" class="main">
 		<table id="list">
-			<tr class="header">
-				<th class="time">修改时间</th>
-				<th class="size">大小</th>
+			<tr class="head">
+				<th class="time">
+					<a href="javascript:;" onclick="head_click(this, 'time');">修改时间</a>
+				</th>
+				<th class="size">
+					<a href="javascript:;" onclick="head_click(this, 'size');">大小</a>
+				</th>
 				<th class="name">
-					<span class="quick" style="display: inline-block;">
+					<span class="quick">
 						<a href="javascript:;" onclick="copyall_click(this);"></a>
 					</span>
-					名称
+					<a href="javascript:;" onclick="head_click(this, 'name');">名称</a>
 				</th>
 			</tr>
 		</table>
