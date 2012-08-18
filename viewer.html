@@ -92,7 +92,7 @@
 		dirobj = null;
 		stat = Object();
 		stat.dirfirst = true;
-		stat.sortname = ""
+		stat.sortname = "name"
 		stat.sortdesc = false;
 
 		function listitem(isdir, name, size, time) {
@@ -165,22 +165,21 @@
 			}
 		}
 
-		function list_sort(key) {
-			if (stat.sortname == key) {
-				stat.sortdesc = !stat.sortdesc;
-			}
-			else {
-				stat.sortname = key;
-				stat.sortdesc = false;
-			}
+		function list_sort() {
+			key = stat.sortname;
 			desc = stat.sortdesc ? -1 : 1;
 			stat.list.sort(function (a, b) {
 				if (stat.dirfirst && (a.isfile != b.isfile)) {
 					return a.isfile - b.isfile
 				}
 				else {
-					return a[key].toString().toLowerCase().localeCompare(
-						b[key].toString().toLowerCase()) * desc;
+					if (typeof(a[key]) == 'number') {
+						return (a[key] - b[key]) * desc;
+					}
+					else {
+						return a[key].toString().toLowerCase().localeCompare(
+							b[key].toString().toLowerCase()) * desc;
+					}
 				}
 			});
 		}
@@ -223,7 +222,8 @@
 				))
 			}
 			stat.list = list;
-			list_sort("name");
+
+			list_sort();
 			list_show();
 		}
 
@@ -266,11 +266,18 @@
 		}
 
 		function head_click(sender, type) {
+			if (stat.sortname == type) {
+				stat.sortdesc = !stat.sortdesc;
+			}
+			else {
+				stat.sortname = type;
+				stat.sortdesc = false;
+			}
 			$('.sort').remove();
-			list_sort(type);
 			$(sender).after('<span class="sort">{mark}</span>'.format({
 				'mark': stat.sortdesc ? '▼' : '▲'
 			}));
+			list_sort(type);
 			list_show();
 		}
 
@@ -300,6 +307,7 @@
 
 		label {
 			font-size: 14px;
+			font-weight: normal;
 		}
 
 		#nav {
@@ -349,6 +357,9 @@
 			margin-left: 6px;
 			text-align: left;
 		}
+		#list .name input {
+			margin-left: 20px;
+		}
 
 		#list .quick {
 			float: right;
@@ -375,7 +386,6 @@
 </head>
 <body>
 	<div id="header" class="main">
-		<div><input id="dirfirst" type="checkbox" onchange="dirfirst_change(this);" checked="true" /><label for="dirfirst">目录排在文件前面</label></div>
 		<div id="nav">&nbsp;</div>
 	</div>
 	<div id="main" class="main">
@@ -392,6 +402,7 @@
 						<a href="javascript:;" onclick="copyall_click(this);"></a>
 					</span>
 					<a href="javascript:;" onclick="head_click(this, 'name');">名称</a>
+					<input id="dirfirst" type="checkbox" onchange="dirfirst_change(this);" checked="true" /><label for="dirfirst">目录排在文件前面</label>
 				</th>
 			</tr>
 		</table>
