@@ -4,6 +4,9 @@ import time
 import json
 import locale
 
+_html_json_begin_mark = '/* OfflineDirectory JSON Begin */'
+_html_json_end_mark = '/* OfflineDirectory JSON End */'
+
 def _calc_dir_info(obj):
     '''计算目录属性
     '''
@@ -113,6 +116,12 @@ def dump_json(obj):
         indent='\t'
     ).replace('|', '')
 
+def dump_html(obj, template):
+    jsons = dump_json(obj)
+    global _html_json_end_mark
+    i = template.index(_html_json_end_mark)
+    return template[:i] + jsons + '\n' + template[i:];  
+
 def _filename_sort_key(s):
     '''返回排序文件名的键值
     '''
@@ -195,10 +204,10 @@ def main():
     parser.add_argument('frompath', metavar='from', help='数据来源')
     parser.add_argument('topath', metavar='to', nargs='?', help='保存结果到')
     parser.add_argument('-ft', '--fromtype', default='dir',
-        choices=['dir', 'json'],
-        help='数据来源类型，默认为 dir 或 json （见备注）')
-    parser.add_argument('-tt', '--totype', default='json',
-        choices=['json', 'tree', 'list'],
+        choices=['dir', 'html', 'json'],
+        help='数据来源类型，默认为 dir 或 html （见备注）')
+    parser.add_argument('-tt', '--totype', default='html',
+        choices=['html', 'json', 'tree', 'list'],
         help='结果储存格式，默认为 %(default)s')
     args = parser.parse_args()
 
@@ -216,7 +225,7 @@ def main():
     # 准备路径信息
     frompath = make_longunc(os.path.abspath(args.frompath + os.sep))
     if not os.path.isdir(frompath):
-        args.fromtype = 'json'
+        args.fromtype = 'html'
     if args.topath == None:
         if args.fromtype == 'dir':
             trans = str.maketrans({x: '_' for x in '\\/:*?"<>|'})
@@ -224,7 +233,8 @@ def main():
             topath += time.strftime('_%Y%m%d_%H%M%S')
         else:
             topath = os.path.os.path.splitext(frompath)[0]
-        typetrans = {'json':'.json', 'tree':'_tree.txt', 'list':'_list.txt'}
+        typetrans = {'html':'.html', 'json':'.json',
+            'tree':'_tree.txt', 'list':'_list.txt'}
         topath += typetrans[args.totype]
     else:
         topath = args.topath
@@ -241,9 +251,17 @@ def main():
             dirsnap = eval('load_{}(fp.read())'.format(args.fromtype))
 
     # 写
+    if args.totype == 'html':
+        filename = os.path.join(os.path.dirname(sys.argv[0]), 'viewer.html')
+        with open(filename, 'r', encoding='utf-8') as fp:
+            template = fp.read()
+        dumps = dump_html(dirsnap, template)
+    else:
+        dumps = eval('dump_{}(dirsnap)'.format(args.totype))
+            
     try:
         with open(topath, 'w', encoding='utf-8') as fp:
-            fp.write(eval('dump_{}(dirsnap)'.format(args.totype)))
+            fp.write(dumps)
     except:
         parser.error('文件 {} 创建失败'.format(topath))
 
