@@ -7,10 +7,12 @@
 	<title>文件列表查看</title>
 	<script type="text/javascript">
 		//<![CDATA[
-		dirobj = null/* OfflineDirectory JSON */;
+		dirobj = 
+		/* OfflineDirectory JSON Begin */
+		/* OfflineDirectory JSON End */
+		null;
 		// ]]>
 	</script>
-
 	<script type="text/javascript">
 		//<![CDATA[
 		/*! jQuery v1.7.2 jquery.com | jquery.org/license */
@@ -412,7 +414,7 @@
 						<a href="javascript:;" onclick="copyall_click(this);"></a>
 					</span>
 					<a href="javascript:;" onclick="head_click(this, 'name');">名称</a>
-					<input id="dirfirst" type="checkbox" onchange="dirfirst_change(this);" checked="true" /><label for="dirfirst">目录排在文件前面</label>
+					<input id="dirfirst" type="checkbox" onchange="dirfirst_change(this);" checked="checked" /><label for="dirfirst">目录排在文件前面</label>
 				</th>
 			</tr>
 		</table>
