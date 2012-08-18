@@ -92,6 +92,13 @@ def load_json(s):
     _calc_dir_info(obj)
     return obj
 
+def load_html(s):
+    global _html_json_begin_mark
+    global _html_json_end_mark
+    begi = s.index(_html_json_begin_mark) + len(_html_json_begin_mark)
+    endi = s.rindex(_html_json_end_mark) - 1
+    return load_json(s[begi:endi])
+
 def dump_json(obj):
     '''由对象 obj 生成 JSON 格式的字符串
     
