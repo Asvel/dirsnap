@@ -231,8 +231,11 @@ def main():
 
     # 准备路径信息
     frompath = make_longunc(os.path.abspath(args.frompath + os.sep))
-    if not os.path.isdir(frompath):
-        args.fromtype = 'html'
+    if args.fromtype == None:
+        if os.path.isdir(frompath):
+            args.fromtype = 'dir'
+        else:
+            args.fromtype = 'html'
     if args.topath == None:
         if args.fromtype == 'dir':
             trans = str.maketrans({x: '_' for x in '\\/:*?"<>|'})
@@ -274,5 +277,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+    #import cProfile as profile
+    #profile.run('main()')
     #from timeit import Timer
     #print(Timer('main()', 'from __main__ import main').timeit(10))
