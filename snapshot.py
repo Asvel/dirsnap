@@ -138,7 +138,7 @@ def dump_html(obj, template):
     jsons = dump_json(obj)
     global _html_json_end_mark
     i = template.index(_html_json_end_mark)
-    return template[:i] + jsons + '\n' + template[i:];  
+    return template[:i] + jsons + '\n' + template[i:];
 
 def _filename_sort_key(s):
     '''返回排序文件名的键值
@@ -254,8 +254,12 @@ def main():
             topath += time.strftime('_%Y%m%d_%H%M%S')
         else:
             topath = os.path.os.path.splitext(frompath)[0]
-        typetrans = {'html':'.html', 'json':'.json',
-            'tree':'_tree.txt', 'list':'_list.txt'}
+        typetrans = {
+            'html':'.html',
+            'json':'.json',
+            'tree':'_tree.txt',
+            'list':'_list.txt'
+        }
         topath += typetrans[args.totype]
     else:
         topath = args.topath
@@ -279,7 +283,6 @@ def main():
         dumps = dump_html(dirsnap, template)
     else:
         dumps = eval('dump_{}(dirsnap)'.format(args.totype))
-            
     try:
         with open(topath, 'w', encoding='utf-8') as fp:
             fp.write(dumps)
