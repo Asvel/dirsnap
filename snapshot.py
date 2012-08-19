@@ -93,6 +93,11 @@ def load_json(s):
     return obj
 
 def load_html(s):
+    '''从 HTML 字符串 s 中读取 JSON 格式字符串
+    
+    s 包含 JSON 字符串的 HTML 字符串
+    返回读取到的对象
+    '''
     global _html_json_begin_mark
     global _html_json_end_mark
     begi = s.index(_html_json_begin_mark) + len(_html_json_begin_mark)
@@ -124,6 +129,12 @@ def dump_json(obj):
     ).replace('|', '')
 
 def dump_html(obj, template):
+    '''由对象 obj 生成 HTML 格式的字符串
+    
+    obj 作为数据源的对象
+    template HTML 模板
+    返回生成的 HTML 格式字符串
+    '''
     jsons = dump_json(obj)
     global _html_json_end_mark
     i = template.index(_html_json_end_mark)
