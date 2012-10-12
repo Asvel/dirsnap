@@ -65,7 +65,7 @@ def load_dir(path):
                 try:
                     info = os.stat(newpath)
                     newitem['size'] = info.st_size
-                    newitem['time'] = int(info.st_mtime * 1000)
+                    newitem['time'] = info.st_mtime
                 except:
                     print("获取此文件的属性时发生异常：", newpath.strip('\\?'))
             else:
@@ -75,7 +75,7 @@ def load_dir(path):
         return {'item': subitem}
 
     # 保存抓取时间
-    now = int(time.time() * 1000)
+    now = time.time()
 
     # 抓取并添加信息
     result = load_a_dir(path)
