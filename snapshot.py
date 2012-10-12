@@ -187,7 +187,7 @@ def dump_list(obj):
 
     desc = [obj['from'] + os.sep]
     dump_list_dir(obj, obj['from'] + os.sep)
-    return '\n'.join(desc)
+    return desc
 
 def main():
 
@@ -284,6 +284,8 @@ def main():
         with open(filename, 'r', encoding='utf-8') as fp:
             template = fp.read()
         dumps = dump_html(dirsnap, template)
+    elif args.totype == 'list':
+        dumps = '\n'.join(dump_list(dirsnap))
     else:
         dumps = eval('dump_{}(dirsnap)'.format(args.totype))
     try:
