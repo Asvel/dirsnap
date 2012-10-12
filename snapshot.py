@@ -122,6 +122,7 @@ def dump_json(obj):
         del obj['item']
         return obj
 
+    _calc_dir_info(obj)
     return json.dumps(
         obj=rename_key_for_sort(obj),
         ensure_ascii=False,
