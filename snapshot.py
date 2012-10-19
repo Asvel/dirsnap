@@ -141,7 +141,7 @@ def dump_html(obj, template):
     jsons = dump_json(obj)
     global _html_json_end_mark
     i = template.index(_html_json_end_mark)
-    return template[:i] + jsons + '\n' + template[i:];
+    return template[:i] + jsons + '\n' + template[i:]
 
 def _filename_sort_key(s):
     """返回排序文件名的键值

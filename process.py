@@ -13,7 +13,7 @@ def delete(obj, path):
 
 
 def main():
-    filename = r"C:\project\OfflineDirectory\test.html";
+    filename = r"C:\project\OfflineDirectory\test.html"
     with open(filename, 'r', encoding='utf-8') as fp:
         dirobj = snapshot.load_html(fp.read())
     exp = re.compile('^' + '[^\{0}]*?\{0}'.format(os.sep) * 4 + '$')
@@ -24,11 +24,11 @@ def main():
     print('\n'.join(dirlist))
 
 def test():
-    filename = r"C:\project\OfflineDirectory\test.html";
+    filename = r"C:\project\OfflineDirectory\test.html"
     with open(filename, 'r', encoding='utf-8') as fp:
         dirobj = snapshot.load_html(fp.read())
     delete(dirobj, r'M:\anime_chk\air')
-    filename = r"C:\project\OfflineDirectory\test1.html";
+    filename = r"C:\project\OfflineDirectory\test1.html"
     with open(r"C:\project\OfflineDirectory\viewer.html", 'r', encoding='utf-8') as fp:
         template = fp.read()
     with open(filename, 'w', encoding='utf-8') as fp:
