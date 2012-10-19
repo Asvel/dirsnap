@@ -1,3 +1,4 @@
 
-/eclipse/*
-/test.json
+/.eclipse/*
+/test/*
+/.idea/*
