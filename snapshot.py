@@ -201,17 +201,17 @@ def main():
     class ArgumentParser(argparse.ArgumentParser):
         def format_usage(self):
             return argparse.ArgumentParser.format_usage(self)\
-                .replace('usage:', '用法：')
+                .replace("usage:", "用法：")
         def format_help(self):
             return argparse.ArgumentParser.format_help(self)\
-                .replace('usage:', '用法：')\
-                .replace('positional arguments:', '参数：')\
-                .replace('\n\noptional arguments:', '')\
-                .replace('show this help message and exit', '显示此帮助并退出')
+                .replace("usage:", "用法：")\
+                .replace("positional arguments:", "参数：")\
+                .replace("\n\noptional arguments:", "")\
+                .replace("show this help message and exit", "显示此帮助并退出")
 
     parser = ArgumentParser(
         description='抓取和转换目录快照',
-        epilog='''\
+        epilog="""\
 备注：
   from 和 to 可以相同，参考示例5
   当 from 为目录时 fromtype 默认为 dir，为文件时默认为 json，参考示例4
@@ -225,16 +225,16 @@ def main():
   %(prog)s -ft json test.json test.json
   %(prog)s -ft json test.json -tt list list.txt
   %(prog)s -ft json -tt tree -- -ftest.json -ttest.txt
-''',
+""",
         formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('frompath', metavar='from', help='数据来源')
-    parser.add_argument('topath', metavar='to', nargs='?', help='保存结果到')
+    parser.add_argument('frompath', metavar='from', help="数据来源")
+    parser.add_argument('topath', metavar='to', nargs='?', help="保存结果到")
     parser.add_argument('-ft', '--fromtype', default='dir',
         choices=['dir', 'html', 'json'],
-        help='数据来源类型，默认为 dir 或 html （见备注）')
+        help="数据来源类型，默认为 dir 或 html （见备注）")
     parser.add_argument('-tt', '--totype', default='html',
         choices=['html', 'json', 'tree', 'list'],
-        help='结果储存格式，默认为 %(default)s')
+        help="结果储存格式，默认为 %(default)s")
     args = parser.parse_args()
 
     def make_longunc(path):
@@ -259,14 +259,14 @@ def main():
         if args.fromtype == 'dir':
             trans = str.maketrans({x: '_' for x in '\\/:*?"<>|'})
             topath = frompath.strip(':\\?').translate(trans)
-            topath += time.strftime('_%Y%m%d_%H%M%S')
+            topath += time.strftime("_%Y%m%d_%H%M%S")
         else:
             topath = os.path.os.path.splitext(frompath)[0]
         typetrans = {
-            'html':'.html',
-            'json':'.json',
-            'tree':'_tree.txt',
-            'list':'_list.txt'
+            'html': ".html",
+            'json': ".json",
+            'tree': "_tree.txt",
+            'list': "_list.txt"
         }
         topath += typetrans[args.totype]
     else:
@@ -274,7 +274,7 @@ def main():
     topath = make_longunc(os.path.abspath(topath))
 
     if not os.path.exists(frompath):
-        parser.error('项目 {} 不存在'.format(frompath))
+        parser.error("项目 {} 不存在".format(frompath))
 
     # 读
     if args.fromtype == 'dir':
@@ -292,7 +292,7 @@ def main():
         with open(topath, 'w', encoding='utf-8') as fp:
             fp.write(dumps)
     except:
-        parser.error('文件 {} 创建失败'.format(topath))
+        parser.error("文件 {} 创建失败".format(topath))
 
 
 def _init():
@@ -300,7 +300,7 @@ def _init():
     """
     global _html_template_default
     try:
-        filename = os.path.join(os.path.dirname(sys.argv[0]), 'viewer.html')
+        filename = os.path.join(os.path.dirname(sys.argv[0]), "viewer.html")
         with open(filename, 'r', encoding='utf-8') as fp:
             _html_template_default = fp.read()
     except:
