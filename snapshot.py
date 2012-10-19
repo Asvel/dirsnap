@@ -81,7 +81,7 @@ def load_dir(path):
     # 抓取并添加信息
     result = load_a_dir(path)
     _calc_dir_info(result)
-    result['from'] = path.strip('\\?')
+    result['from'] = path.strip('?' + os.sep)
     result['time'] = now
     return result
 
