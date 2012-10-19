@@ -6,8 +6,9 @@ import time
 import json
 import locale
 
-_html_json_begin_mark = '/* OfflineDirectory JSON Begin */'
-_html_json_end_mark = '/* OfflineDirectory JSON End */'
+_html_json_begin_mark = "/* OfflineDirectory JSON Begin */"
+_html_json_end_mark = "/* OfflineDirectory JSON End */"
+_html_template_default = ""
 
 def _calc_dir_info(obj):
     """计算目录属性
@@ -131,13 +132,17 @@ def dump_json(obj):
         indent='\t'
     ).replace('|', '')
 
-def dump_html(obj, template):
+def dump_html(obj, template=None):
     """由对象 obj 生成 HTML 格式的字符串
 
     obj 作为数据源的对象
     template HTML 模板
     返回生成的 HTML 格式字符串
     """
+    if template is None:
+        global _html_template_default
+        template = _html_template_default
+
     jsons = dump_json(obj)
     global _html_json_end_mark
     i = template.index(_html_json_end_mark)
@@ -279,12 +284,7 @@ def main():
             dirsnap = eval('load_{}(fp.read())'.format(args.fromtype))
 
     # 写
-    if args.totype == 'html':
-        filename = os.path.join(os.path.dirname(sys.argv[0]), 'viewer.html')
-        with open(filename, 'r', encoding='utf-8') as fp:
-            template = fp.read()
-        dumps = dump_html(dirsnap, template)
-    elif args.totype == 'list':
+    if args.totype == 'list':
         dumps = '\n'.join(dump_list(dirsnap))
     else:
         dumps = eval('dump_{}(dirsnap)'.format(args.totype))
@@ -293,6 +293,20 @@ def main():
             fp.write(dumps)
     except:
         parser.error('文件 {} 创建失败'.format(topath))
+
+
+def _init():
+    """初始化
+    """
+    global _html_template_default
+    try:
+        filename = os.path.join(os.path.dirname(sys.argv[0]), 'viewer.html')
+        with open(filename, 'r', encoding='utf-8') as fp:
+            _html_template_default = fp.read()
+    except:
+        pass
+
+_init()
 
 if __name__ == '__main__':
     main()
