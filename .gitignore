@@ -2,3 +2,4 @@
 /.eclipse/*
 /test/*
 /.idea/*
+*.pyc
