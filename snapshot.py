@@ -13,11 +13,16 @@ _html_template_default = ""
 def _calc_dir_info(obj):
     """计算目录属性
     """
-    for item in obj['item'].values():
-        if 'item' in item:
-            _calc_dir_info(item)
-    obj['size'] = sum([x['size'] for x in obj['item'].values()] + [0])
-    obj['time'] = max([x['time'] for x in obj['item'].values()] + [0])
+    def calc(obj):
+        for item in obj['item'].values():
+            if 'item' in item:
+                _calc_dir_info(item)
+        obj['size'] = sum([x['size'] for x in obj['item'].values()] + [0])
+        obj['time'] = max([x['time'] for x in obj['item'].values()] + [0])
+
+    time_bak = obj['time']  #备份抓取时间
+    calc(obj)
+    obj['time'] = time_bak
 
 def load_dir(path):
     """抓取目录列表为一个字典
