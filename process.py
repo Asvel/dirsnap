@@ -4,6 +4,8 @@ import snapshot
 import os
 
 def select(obj, path):
+    if not path.startswith(obj['from']):
+        raise Exception("目标项目在快照范围之外")
     path_part = [x for x in path[len(obj['from']):].split(os.sep) if x != '']
     for part in path_part:
         obj = obj['item'][part]
@@ -44,8 +46,6 @@ def merge(obj1, obj2):
     return {'item':newitems}
 
 def mkdir(obj, path):
-    if not path.startswith(obj['from']):
-        raise Exception()
     path, name = os.path.split(path.strip(os.sep))
     pathobj = select(obj, path)
     pathobj['item'][name] = {'item':{}}
