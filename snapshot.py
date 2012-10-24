@@ -225,10 +225,10 @@ def main():
 示例：
   %(prog)s C:
   %(prog)s C: result.json
-  %(prog)s C: -tt list
-  %(prog)s test.json -tt tree
+  %(prog)s -tt list C:
+  %(prog)s -tt tree test.json
   %(prog)s -ft json test.json test.json
-  %(prog)s -ft json test.json -tt list list.txt
+  %(prog)s -ft json -tt list test.json list.txt
   %(prog)s -ft json -tt tree -- -ftest.json -ttest.txt
 """,
         formatter_class=argparse.RawTextHelpFormatter)
