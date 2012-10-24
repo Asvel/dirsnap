@@ -16,7 +16,7 @@ def _calc_dir_info(obj):
     def calc(obj):
         for item in obj['item'].values():
             if 'item' in item:
-                _calc_dir_info(item)
+                calc(item)
         obj['size'] = sum([x['size'] for x in obj['item'].values()] + [0])
         obj['time'] = max([x['time'] for x in obj['item'].values()] + [0])
 
