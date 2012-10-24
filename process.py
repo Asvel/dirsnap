@@ -25,8 +25,9 @@ def delete(obj, path):
 def rename(obj, src, newname):
     path, oldname = os.path.split(src.strip(os.sep))
     pathobj = select(obj, path)
-    if newname not in pathobj:
-        pathobj[newname] = pathobj[oldname]
+    if newname in pathobj:
+        raise Exception("目标项目已存在")
+    pathobj[newname] = pathobj[oldname]
     del pathobj[oldname]
 
 def merge(obj1, obj2):
