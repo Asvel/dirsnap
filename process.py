@@ -31,6 +31,8 @@ def rename(obj, src, newname):
     del pathobj[oldname]
 
 def merge(obj1, obj2):
+    if not ('item' in obj1 and 'item' in obj2):
+        raise Exception("存在名称相同的文件，合并失败")
     items1 = obj1['item']
     items2 = obj2['item']
     newitems = {}
