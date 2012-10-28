@@ -24,7 +24,7 @@ def delete(obj, path):
 
 def rename(obj, src, newname):
     path, oldname = os.path.split(src.strip(os.sep))
-    pathobj = select(obj, path)
+    pathobj = select(obj, path)['item']
     if newname in pathobj:
         raise Exception("目标项目已存在")
     pathobj[newname] = pathobj[oldname]
